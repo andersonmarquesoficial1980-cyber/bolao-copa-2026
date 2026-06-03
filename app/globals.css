@@ -1,22 +1,23 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Fremix: Azul #1B3A8C | Vermelho #E03020 */
 :root {
-  --background: 60 33% 98%;
-  --foreground: 160 62% 14%;
+  --background: 0 0% 97%;
+  --foreground: 220 50% 15%;
   --card: 0 0% 100%;
-  --card-foreground: 160 62% 14%;
-  --primary: 146 78% 33%;
-  --primary-foreground: 60 100% 97%;
-  --secondary: 49 96% 53%;
-  --secondary-foreground: 154 64% 16%;
-  --muted: 57 42% 90%;
-  --muted-foreground: 159 31% 30%;
-  --border: 55 35% 83%;
-  --radius: 0.75rem;
+  --card-foreground: 220 50% 15%;
+  --primary: 224 69% 32%;        /* #1B3A8C azul Fremix */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 5 76% 52%;        /* #E03020 vermelho Fremix */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 220 20% 93%;
+  --muted-foreground: 220 15% 45%;
+  --border: 220 20% 86%;
+  --radius: 0.5rem;
 }
 
 * {
@@ -25,11 +26,16 @@
 
 body {
   @apply bg-background text-foreground antialiased;
-  background-image:
-    radial-gradient(circle at 5% 0%, rgba(255, 223, 64, 0.35) 0, rgba(255, 223, 64, 0) 35%),
-    radial-gradient(circle at 95% 0%, rgba(16, 167, 92, 0.3) 0, rgba(16, 167, 92, 0) 36%);
+  font-family: 'Inter', sans-serif;
 }
 
 main {
   @apply min-h-[calc(100vh-9rem)];
+}
+
+/* Barra de destaque Fremix no topo */
+.fremix-stripe {
+  background: linear-gradient(90deg, #1B3A8C 0%, #1B3A8C 48%, #E03020 52%, #E03020 100%);
+  height: 4px;
+  width: 100%;
 }

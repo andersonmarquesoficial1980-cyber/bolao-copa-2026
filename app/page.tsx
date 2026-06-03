@@ -34,23 +34,26 @@ export default async function LandingPage() {
     <div className="space-y-8">
       <section className="grid gap-6 rounded-2xl border border-border bg-white/80 p-6 shadow-sm md:grid-cols-[1.2fr_1fr] md:p-8">
         <div className="space-y-4">
-          <p className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold uppercase text-secondary-foreground">
-            Temporada Copa 2026
-          </p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
-            Bolão Copa 2026: dispute com a galera e suba no ranking
+          <div className="flex items-center gap-2">
+            <span className="inline-block rounded-sm bg-[#E03020] px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
+              Fremix
+            </span>
+            <span className="text-xs font-semibold text-[#1B3A8C] uppercase tracking-widest">Copa 2026 ⚽</span>
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-[#1B3A8C] md:text-4xl">
+            Bolão Copa do Mundo 2026
           </h1>
-          <p className="text-muted-foreground">
-            Faça palpites por rodada, acumule pontos automaticamente e acompanhe a classificação em tempo real.
+          <p className="text-gray-500">
+            Dispute com os colegas da Fremix. Palpite os placares, acumule pontos e concorra ao prêmio.
           </p>
 
           <div className="flex flex-wrap gap-3">
             <Link href="/auth/cadastro">
-              <Button size="lg">Quero participar</Button>
+              <Button size="lg" className="bg-[#E03020] hover:bg-[#c02818] text-white">Quero participar</Button>
             </Link>
             <Link href="/ranking">
-              <Button variant="outline" size="lg">
-                Ver ranking completo
+              <Button variant="outline" size="lg" className="border-[#1B3A8C] text-[#1B3A8C] hover:bg-[#1B3A8C] hover:text-white">
+                Ver ranking
               </Button>
             </Link>
           </div>

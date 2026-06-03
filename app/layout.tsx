@@ -4,8 +4,8 @@ import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 
 export const metadata: Metadata = {
-  title: "Bolão Copa 2026",
-  description: "Bolão de palpites de placares da Copa 2026"
+  title: "Fremix | Bolão Copa 2026",
+  description: "Bolão de palpites da Copa do Mundo 2026 - Fremix"
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
