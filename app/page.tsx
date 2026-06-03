@@ -1,3 +1,5 @@
+export const revalidate = 0
+
 import Link from "next/link"
 import { CountdownTimer } from "@/components/CountdownTimer"
 import { RankingTable } from "@/components/RankingTable"
