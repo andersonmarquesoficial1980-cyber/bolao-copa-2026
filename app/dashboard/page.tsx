@@ -18,7 +18,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, { data: registration }, { data: totalPredictions }, { data: config }] =
+  const [{ data: profile }, { data: score }, { data: registration }, predResult, { data: config }] =
     await Promise.all([
       supabase.from("profiles").select("nome,email").eq("id", user.id).single(),
       supabase
@@ -38,6 +38,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       supabase.from("prize_config").select("valor_inscricao").limit(1).maybeSingle()
     ])
 
+  const totalPredictions = predResult.count ?? 0
   const valorInscricao = config?.valor_inscricao ?? 0
 
   return (
@@ -77,7 +78,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <CardHeader>
             <CardTitle className="text-sm">Palpites enviados</CardTitle>
           </CardHeader>
-          <CardContent className="text-3xl font-bold">{totalPredictions.count || 0}</CardContent>
+          <CardContent className="text-3xl font-bold">{totalPredictions}</CardContent>
         </Card>
       </section>
 

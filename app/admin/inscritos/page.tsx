@@ -15,7 +15,7 @@ export default async function AdminInscritosPage({ searchParams }: AdminInscrito
   const [{ data: registrations }, { data: prizeConfig }] = await Promise.all([
     supabase
       .from("registrations")
-      .select("id,user_id,status,valor_pago,paid_at,profiles(nome,email)")
+      .select("id,user_id,status,valor_pago,paid_at,profiles!inner(nome,email)")
       .order("status", { ascending: true }),
     supabase.from("prize_config").select("valor_inscricao").limit(1).maybeSingle()
   ])
@@ -50,8 +50,8 @@ export default async function AdminInscritosPage({ searchParams }: AdminInscrito
               <input type="hidden" name="registration_id" value={registration.id} />
 
               <div>
-                <p className="font-semibold">{registration.profiles?.nome || registration.user_id}</p>
-                <p className="text-sm text-muted-foreground">{registration.profiles?.email}</p>
+                <p className="font-semibold">{(registration.profiles as any)?.nome || registration.user_id}</p>
+                <p className="text-sm text-muted-foreground">{(registration.profiles as any)?.email}</p>
               </div>
 
               <select

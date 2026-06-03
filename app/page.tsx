@@ -27,7 +27,7 @@ export default async function LandingPage() {
     supabase.from("prize_config").select("*").limit(1).maybeSingle()
   ])
 
-  const rankingData = (ranking || []) as Score[]
+  const rankingData = (ranking || []) as unknown as Score[]
   const prize = config as PrizeConfig | null
 
   return (

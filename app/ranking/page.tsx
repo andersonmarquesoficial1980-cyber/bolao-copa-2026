@@ -26,7 +26,7 @@ export default async function RankingPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold text-primary">Ranking completo</h1>
-      <RankingTable ranking={ranking as Score[]} title="Classificação geral" />
+      <RankingTable ranking={ranking as unknown as Score[]} title="Classificação geral" />
     </div>
   )
 }
