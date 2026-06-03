@@ -1,4 +1,4 @@
-export const revalidate = 0
+export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { CountdownTimer } from "@/components/CountdownTimer"
@@ -12,7 +12,8 @@ import { PrizeConfig, Score } from "@/types"
 export default async function LandingPage() {
   const supabase = createSupabaseServerClient()
 
-  const [{ data: ranking }, { data: nextGame }, { data: config }] = await Promise.all([
+  const [{ data: { user } }, { data: ranking }, { data: nextGame }, { data: config }] = await Promise.all([
+    supabase.auth.getUser(),
     supabase
       .from("scores")
       .select("user_id,total_pontos,acertos_exatos,acertos_resultado,total_palpites,profiles(nome,avatar_url)")
@@ -50,9 +51,19 @@ export default async function LandingPage() {
           </p>
 
           <div className="flex flex-wrap gap-3">
-            <Link href="/auth/cadastro">
-              <Button size="lg" className="bg-[#E03020] hover:bg-[#c02818] text-white">Quero participar</Button>
-            </Link>
+            {user ? (
+              <Link href="/rodada">
+                <Button size="lg" className="bg-[#E03020] hover:bg-[#c02818] text-white">
+                  Fazer meus palpites
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/auth/cadastro">
+                <Button size="lg" className="bg-[#E03020] hover:bg-[#c02818] text-white">
+                  Quero participar
+                </Button>
+              </Link>
+            )}
             <Link href="/ranking">
               <Button variant="outline" size="lg" className="border-[#1B3A8C] text-[#1B3A8C] hover:bg-[#1B3A8C] hover:text-white">
                 Ver ranking
