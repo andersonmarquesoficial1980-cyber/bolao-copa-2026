@@ -34,7 +34,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex flex-col leading-none">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#E03020]">Fremix</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#E03020]">Workfut · Fremix</span>
             <span className="text-lg font-black tracking-tight text-[#1B3A8C]">Bolão Copa 2026 ⚽</span>
           </div>
         </Link>
