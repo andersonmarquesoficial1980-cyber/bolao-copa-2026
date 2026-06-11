@@ -89,14 +89,7 @@ export default async function LandingPage() {
               <p className="text-muted-foreground">Não há partidas agendadas no momento.</p>
             )}
 
-            {prize && (
-              <div className="rounded-lg bg-muted p-3 text-sm">
-                <p className="font-semibold">Inscrição: {formatCurrency(prize.valor_inscricao)}</p>
-                <p>
-                  Premiação: {prize.percentual_1lugar}% / {prize.percentual_2lugar}% / {prize.percentual_3lugar}%
-                </p>
-              </div>
-            )}
+
           </CardContent>
         </Card>
       </section>
