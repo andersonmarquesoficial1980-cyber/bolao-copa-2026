@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { RankingRace } from "@/components/RankingRace"
 import { RankingTable } from "@/components/RankingTable"
+import { CaixaTransparente } from "@/components/CaixaTransparente"
 import { Score } from "@/types"
 
 export default async function DashboardPage() {
@@ -12,17 +13,20 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, predResult, { data: ranking }] = await Promise.all([
+  const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }] = await Promise.all([
     supabase.from("profiles").select("nome").eq("id", user.id).single(),
     supabase.from("scores").select("total_pontos,acertos_exatos,acertos_resultado,total_palpites").eq("user_id", user.id).maybeSingle(),
     supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     // Busca todos que palpitaram, com scores se existirem
     supabase.from("profiles")
       .select("id,nome,avatar_url,scores(total_pontos,acertos_exatos,acertos_resultado,total_palpites)")
-      .order("nome", { ascending: true })
+      .order("nome", { ascending: true }),
+    supabase.from("registrations").select("valor_pago,status").eq("status", "paid")
   ])
 
   const totalPredictions = predResult.count ?? 0
+  const totalArrecadado = (pagamentos || []).reduce((sum, r) => sum + (r.valor_pago || 0), 0)
+  const totalParticipantes = (ranking || []).length
 
   // Normaliza ranking para o formato Score esperado pelos componentes
   const normalizedRanking: Score[] = ((ranking || []) as unknown as Array<{
@@ -73,6 +77,13 @@ export default async function DashboardPage() {
           <CardContent className="text-3xl font-bold">{totalPredictions}</CardContent>
         </Card>
       </section>
+
+      {/* Caixa transparente */}
+      <CaixaTransparente
+        totalArrecadado={totalArrecadado}
+        totalParticipantes={totalParticipantes}
+        jogosDoDia11e12Gratis={true}
+      />
 
       {/* Ações */}
       <section className="flex flex-wrap gap-3">

@@ -99,7 +99,9 @@ export function GameCard({ game, prediction, otherPredictions = [] }: GameCardPr
                     </AvatarFallback>
                   </Avatar>
                   <span className="font-medium">{p.profiles?.nome?.split(" ")[0]}</span>
-                  <span className="text-muted-foreground">{p.palpite_casa}×{p.palpite_fora}</span>
+                  <span className="text-muted-foreground">
+                    {game.bandeira_casa} {p.palpite_casa} × {p.palpite_fora} {game.bandeira_fora}
+                  </span>
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
-import { GameCard } from "@/components/GameCard"
 import { Card, CardContent } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { Game, Prediction } from "@/types"
+import { RodadaPorData } from "@/components/RodadaPorData"
 
 interface RodadaPageProps {
   searchParams?: { error?: string; success?: string }
@@ -9,10 +9,7 @@ interface RodadaPageProps {
 
 export default async function RodadaPage({ searchParams }: RodadaPageProps) {
   const supabase = createSupabaseServerClient()
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
   const [{ data: games }, { data: predictions }, { data: allPredictions }] = await Promise.all([
@@ -25,9 +22,8 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
     supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)")
   ])
 
-  const predictionMap = new Map((predictions || []).map((prediction) => [prediction.game_id, prediction as Prediction]))
+  const predictionMap = new Map((predictions || []).map(p => [p.game_id, p as Prediction]))
 
-  // Agrupa palpites de todos por jogo
   const allPredictionsMap = new Map<string, { palpite_casa: number; palpite_fora: number; profiles: { nome: string; avatar_url?: string } | null }[]>()
   for (const p of allPredictions || []) {
     const arr = allPredictionsMap.get(p.game_id) || []
@@ -36,10 +32,10 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <section>
-        <h1 className="text-3xl font-bold text-primary">Palpites da rodada</h1>
-        <p className="text-muted-foreground">Envie ou edite seus palpites até o início de cada partida.</p>
+        <h1 className="text-3xl font-bold text-primary">Palpites</h1>
+        <p className="text-muted-foreground text-sm">Escolha o dia e faça seus palpites antes de cada jogo começar.</p>
       </section>
 
       {searchParams?.error && (
@@ -49,18 +45,13 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
         <p className="rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-700">{searchParams.success}</p>
       )}
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {(games as Game[] | null)?.map((game) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            prediction={predictionMap.get(game.id)}
-            otherPredictions={allPredictionsMap.get(game.id) || []}
-          />
-        ))}
-      </section>
-
-      {!games?.length && (
+      {games?.length ? (
+        <RodadaPorData
+          games={games as Game[]}
+          predictionMap={predictionMap}
+          allPredictionsMap={allPredictionsMap}
+        />
+      ) : (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">Não existem jogos cadastrados ainda.</CardContent>
         </Card>
