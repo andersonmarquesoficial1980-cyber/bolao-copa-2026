@@ -31,7 +31,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
   const allPredictionsMap = new Map<string, { palpite_casa: number; palpite_fora: number; profiles: { nome: string; avatar_url?: string } | null }[]>()
   for (const p of allPredictions || []) {
     const arr = allPredictionsMap.get(p.game_id) || []
-    arr.push({ palpite_casa: p.palpite_casa, palpite_fora: p.palpite_fora, profiles: p.profiles as { nome: string; avatar_url?: string } | null })
+    arr.push({ palpite_casa: p.palpite_casa, palpite_fora: p.palpite_fora, profiles: p.profiles as unknown as { nome: string; avatar_url?: string } | null })
     allPredictionsMap.set(p.game_id, arr)
   }
 
