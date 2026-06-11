@@ -97,12 +97,7 @@ export default async function DashboardPage() {
         <Link href="/palpites">
           <Button variant="outline">👀 Ver palpites da galera</Button>
         </Link>
-        <BotaoPagamento
-          userId={user.id}
-          nome={profile?.nome || ""}
-          email={profileEmail}
-          jaPagou={jaPagou}
-        />
+        <BotaoPagamento jaPagou={jaPagou} />
       </section>
 
       {/* Ranking */}

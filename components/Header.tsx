@@ -52,9 +52,14 @@ export async function Header() {
                 Palpites
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-sm font-medium hover:text-primary">
-                  Admin
-                </Link>
+                <>
+                  <Link href="/admin" className="text-sm font-medium hover:text-primary">
+                    Admin
+                  </Link>
+                  <Link href="/admin/pagamentos" className="text-sm font-medium hover:text-primary text-green-600">
+                    Pagamentos
+                  </Link>
+                </>
               )}
             </>
           )}
