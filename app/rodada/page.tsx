@@ -15,16 +15,25 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
 
   if (!user) return null
 
-  const [{ data: games }, { data: predictions }] = await Promise.all([
+  const [{ data: games }, { data: predictions }, { data: allPredictions }] = await Promise.all([
     supabase
       .from("games")
       .select("id,group_id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
       .neq("status", "cancelled")
       .order("data_jogo", { ascending: true }),
-    supabase.from("predictions").select("*").eq("user_id", user.id)
+    supabase.from("predictions").select("*").eq("user_id", user.id),
+    supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)")
   ])
 
   const predictionMap = new Map((predictions || []).map((prediction) => [prediction.game_id, prediction as Prediction]))
+
+  // Agrupa palpites de todos por jogo
+  const allPredictionsMap = new Map<string, { palpite_casa: number; palpite_fora: number; profiles: { nome: string; avatar_url?: string } | null }[]>()
+  for (const p of allPredictions || []) {
+    const arr = allPredictionsMap.get(p.game_id) || []
+    arr.push({ palpite_casa: p.palpite_casa, palpite_fora: p.palpite_fora, profiles: p.profiles as { nome: string; avatar_url?: string } | null })
+    allPredictionsMap.set(p.game_id, arr)
+  }
 
   return (
     <div className="space-y-6">
@@ -42,7 +51,12 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
 
       <section className="grid gap-4 md:grid-cols-2">
         {(games as Game[] | null)?.map((game) => (
-          <GameCard key={game.id} game={game} prediction={predictionMap.get(game.id)} />
+          <GameCard
+            key={game.id}
+            game={game}
+            prediction={predictionMap.get(game.id)}
+            otherPredictions={allPredictionsMap.get(game.id) || []}
+          />
         ))}
       </section>
 

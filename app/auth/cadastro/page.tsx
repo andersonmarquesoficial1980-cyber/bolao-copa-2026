@@ -33,12 +33,14 @@ export default function CadastroPage({ searchParams }: CadastroPageProps) {
     }
 
     if (data.user?.id) {
-      const admin = createSupabaseAdminClient()
+      const avatar_url = String(formData.get("avatar_url") || "")
+    const admin = createSupabaseAdminClient()
       await admin.from("profiles").upsert(
         {
           id: data.user.id,
           nome,
           email,
+          avatar_url: avatar_url || null,
           is_admin: false
         },
         { onConflict: "id" }
@@ -70,6 +72,12 @@ export default function CadastroPage({ searchParams }: CadastroPageProps) {
             <div className="space-y-1">
               <Label htmlFor="password">Senha</Label>
               <Input id="password" name="password" type="password" required minLength={6} />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="avatar_url">Link da foto de perfil <span className="text-muted-foreground">(opcional)</span></Label>
+              <Input id="avatar_url" name="avatar_url" type="url" placeholder="https://sua-foto.com/foto.jpg" />
+              <p className="text-xs text-muted-foreground">Cole o link de uma foto sua (Google Fotos, WhatsApp Web, etc)</p>
             </div>
 
             {searchParams?.error && (

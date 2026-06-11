@@ -1,9 +1,7 @@
 import Link from "next/link"
-import { registerPoolAction } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
-import { formatCurrency } from "@/lib/utils"
 
 interface DashboardPageProps {
   searchParams?: { error?: string; success?: string }
@@ -18,7 +16,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, { data: registration }, predResult, { data: config }] =
+  const [{ data: profile }, { data: score }, predResult] =
     await Promise.all([
       supabase.from("profiles").select("nome,email").eq("id", user.id).single(),
       supabase
@@ -27,19 +25,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase
-        .from("registrations")
-        .select("id,status,valor_pago")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
         .from("predictions")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id),
-      supabase.from("prize_config").select("valor_inscricao").limit(1).maybeSingle()
     ])
 
   const totalPredictions = predResult.count ?? 0
-  const valorInscricao = config?.valor_inscricao ?? 0
 
   return (
     <div className="space-y-6">
@@ -82,31 +73,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Inscrição no bolão</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <p>
-              Status atual: <span className="font-semibold uppercase">{registration?.status || "não inscrito"}</span>
-            </p>
-            <p>Valor da inscrição: {formatCurrency(valorInscricao)}</p>
-
-            {!registration && (
-              <form action={registerPoolAction}>
-                <Button type="submit">Solicitar inscrição</Button>
-              </form>
-            )}
-
-            {registration?.status === "pending" && (
-              <p className="rounded-md bg-muted p-2 text-muted-foreground">
-                Sua inscrição está pendente de confirmação de pagamento.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
+      <section className="grid gap-4 md:grid-cols-1">
         <Card>
           <CardHeader>
             <CardTitle>Ações rápidas</CardTitle>
