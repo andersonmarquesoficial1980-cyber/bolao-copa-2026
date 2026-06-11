@@ -55,12 +55,20 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
             </Button>
           </form>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            Ainda não tem conta?{" "}
-            <Link href="/auth/cadastro" className="font-medium text-primary hover:underline">
-              Criar cadastro
-            </Link>
-          </p>
+          <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+            <p>
+              Ainda não tem conta?{" "}
+              <Link href="/auth/cadastro" className="font-medium text-primary hover:underline">
+                Criar cadastro
+              </Link>
+            </p>
+            <p>
+              Esqueceu a senha?{" "}
+              <Link href="/auth/esqueci-senha" className="font-medium text-primary hover:underline">
+                Redefinir senha
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
