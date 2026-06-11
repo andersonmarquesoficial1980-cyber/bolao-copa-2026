@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
+import { MobileMenu } from "@/components/MobileMenu"
 
 export async function Header() {
   const supabase = createSupabaseServerClient()
@@ -84,12 +85,13 @@ export async function Header() {
 
           {user && (
             <div className="flex items-center gap-2">
-              <a href="/perfil" className="text-sm font-medium hover:text-primary">Perfil</a>
-              <form action={logoutAction}>
+              <a href="/perfil" className="hidden md:block text-sm font-medium hover:text-primary">Perfil</a>
+              <form action={logoutAction} className="hidden md:block">
                 <Button variant="outline" size="sm" type="submit">
                   Sair
                 </Button>
               </form>
+              <MobileMenu isAdmin={isAdmin} isLoggedIn={!!user} />
             </div>
           )}
         </div>
