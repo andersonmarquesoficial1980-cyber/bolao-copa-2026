@@ -2,92 +2,86 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
+import { RankingRace } from "@/components/RankingRace"
+import { RankingTable } from "@/components/RankingTable"
+import { Score } from "@/types"
 
-interface DashboardPageProps {
-  searchParams?: { error?: string; success?: string }
-}
-
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+export default async function DashboardPage() {
   const supabase = createSupabaseServerClient()
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, predResult] =
-    await Promise.all([
-      supabase.from("profiles").select("nome,email").eq("id", user.id).single(),
-      supabase
-        .from("scores")
-        .select("total_pontos,acertos_exatos,acertos_resultado,total_palpites")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("predictions")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id),
-    ])
+  const [{ data: profile }, { data: score }, predResult, { data: ranking }] = await Promise.all([
+    supabase.from("profiles").select("nome").eq("id", user.id).single(),
+    supabase.from("scores").select("total_pontos,acertos_exatos,acertos_resultado,total_palpites").eq("user_id", user.id).maybeSingle(),
+    supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("scores")
+      .select("user_id,total_pontos,acertos_exatos,acertos_resultado,total_palpites,profiles(nome,avatar_url)")
+      .order("total_pontos", { ascending: false })
+      .order("acertos_exatos", { ascending: false })
+  ])
 
   const totalPredictions = predResult.count ?? 0
 
   return (
     <div className="space-y-6">
+      {/* Saudação */}
       <section className="space-y-1">
-        <h1 className="text-3xl font-bold text-primary">Olá, {profile?.nome || "participante"}</h1>
-        <p className="text-muted-foreground">Acompanhe sua evolução no bolão e atualize palpites da rodada.</p>
+        <h1 className="text-3xl font-bold text-primary">Olá, {profile?.nome || "participante"} ⚽</h1>
       </section>
 
-      {searchParams?.error && (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">{searchParams.error}</p>
-      )}
-      {searchParams?.success && (
-        <p className="rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-700">{searchParams.success}</p>
-      )}
-
-      <section className="grid gap-4 md:grid-cols-4">
+      {/* Stats do usuário */}
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Pontos totais</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs text-muted-foreground">Pontos</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold text-primary">{score?.total_pontos || 0}</CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Acertos exatos</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs text-muted-foreground">Placar exato ✅</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{score?.acertos_exatos || 0}</CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Acertos resultado</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs text-muted-foreground">Resultado 👍</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{score?.acertos_resultado || 0}</CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Palpites enviados</CardTitle>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs text-muted-foreground">Palpites</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{totalPredictions}</CardContent>
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-1">
+      {/* Ações */}
+      <section className="flex flex-wrap gap-3">
+        <Link href="/rodada">
+          <Button>⚽ Fazer palpites</Button>
+        </Link>
+        <Link href="/palpites">
+          <Button variant="outline">👀 Ver palpites da galera</Button>
+        </Link>
+      </section>
+
+      {/* Ranking */}
+      {ranking && ranking.length > 0 ? (
+        <section className="space-y-4">
+          <RankingRace ranking={ranking as unknown as Score[]} />
+          <RankingTable ranking={ranking as unknown as Score[]} title="Classificação detalhada" />
+        </section>
+      ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>Ações rápidas</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Link href="/rodada">
-              <Button>Palpitar rodada</Button>
-            </Link>
-            <Link href="/ranking">
-              <Button variant="outline">Ver ranking</Button>
-            </Link>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Nenhum palpite ainda — seja o primeiro!
           </CardContent>
         </Card>
-      </section>
+      )}
     </div>
   )
 }

@@ -40,16 +40,13 @@ export async function Header() {
         </Link>
 
         <nav className="hidden items-center gap-4 md:flex">
-          <Link href="/ranking" className="text-sm font-medium text-gray-600 hover:text-[#1B3A8C]">
-            Ranking
-          </Link>
           {user && (
             <>
               <Link href="/dashboard" className="text-sm font-medium hover:text-primary">
-                Dashboard
+                Início
               </Link>
               <Link href="/rodada" className="text-sm font-medium hover:text-primary">
-                Rodada
+                Palpitar
               </Link>
               <Link href="/palpites" className="text-sm font-medium hover:text-primary">
                 Palpites
