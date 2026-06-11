@@ -51,6 +51,9 @@ export async function Header() {
               <Link href="/rodada" className="text-sm font-medium hover:text-primary">
                 Rodada
               </Link>
+              <Link href="/palpites" className="text-sm font-medium hover:text-primary">
+                Palpites
+              </Link>
               {isAdmin && (
                 <Link href="/admin" className="text-sm font-medium hover:text-primary">
                   Admin
