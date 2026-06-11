@@ -64,8 +64,10 @@ export default function CadastroPage() {
       }
     }
 
-    // 3. Upsert no profiles
-    await supabase.from("profiles").upsert({ id: userId, nome: nomeVal, email, avatar_url, is_admin: false }, { onConflict: "id" })
+    // 3. Atualiza avatar_url no profiles se fez upload (a trigger já criou o perfil)
+    if (avatar_url) {
+      await supabase.from("profiles").update({ avatar_url }).eq("id", userId)
+    }
 
     router.push("/dashboard")
   }
