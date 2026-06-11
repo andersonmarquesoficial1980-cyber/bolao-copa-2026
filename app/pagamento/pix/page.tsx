@@ -99,10 +99,19 @@ export default function PagamentoPix() {
             </ol>
           </div>
 
-          {/* Aviso confirmação */}
-          <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800 text-center">
-            Após o pagamento, o administrador confirmará sua inscrição em até <strong>1 hora</strong>.<br/>
-            Você receberá acesso automaticamente.
+          {/* Comunicado comprovante */}
+          <div className="rounded-lg bg-blue-50 border-2 border-[#1B3A8C] p-4 text-sm text-[#1B3A8C] space-y-2">
+            <p className="font-bold text-base">📲 Após pagar, envie o comprovante!</p>
+            <p>Mande o comprovante no WhatsApp para confirmar sua inscrição:</p>
+            <a
+              href="https://wa.me/5511997396211?text=Oi%20Anderson%2C%20segue%20meu%20comprovante%20do%20Workfut%20Bol%C3%A3o%20Copa%202026"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 transition-colors"
+            >
+              <span className="text-xl">📱</span> Enviar comprovante — WhatsApp Anderson
+            </a>
+            <p className="text-xs text-center text-muted-foreground">Sua inscrição será confirmada em até 1 hora após o envio.</p>
           </div>
 
           <Link href="/dashboard">

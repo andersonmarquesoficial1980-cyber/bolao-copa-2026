@@ -80,11 +80,14 @@ export async function Header() {
           )}
 
           {user && (
-            <form action={logoutAction}>
-              <Button variant="outline" size="sm" type="submit">
-                Sair
-              </Button>
-            </form>
+            <div className="flex items-center gap-2">
+              <a href="/perfil" className="text-sm font-medium hover:text-primary">Perfil</a>
+              <form action={logoutAction}>
+                <Button variant="outline" size="sm" type="submit">
+                  Sair
+                </Button>
+              </form>
+            </div>
           )}
         </div>
       </div>

@@ -12,8 +12,7 @@ interface RankingTableProps {
 function getMedal(position: number) {
   if (position === 1) return "bg-yellow-400 text-yellow-950"
   if (position === 2) return "bg-zinc-300 text-zinc-800"
-  if (position === 3) return "bg-amber-700 text-amber-100"
-  return "bg-muted"
+  return "bg-muted text-muted-foreground"
 }
 
 export function RankingTable({ ranking, title = "Ranking Geral" }: RankingTableProps) {
