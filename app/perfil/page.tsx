@@ -85,8 +85,8 @@ export default function PerfilPage() {
 
             {/* Avatar */}
             <div className="flex flex-col items-center gap-3">
-              <Avatar className="h-24 w-24 border-4 border-[#1B3A8C] shadow-lg">
-                <AvatarImage src={preview || avatarAtual || undefined} />
+              <Avatar className="h-24 w-24 border-4 border-[#1B3A8C] shadow-lg overflow-hidden">
+                <AvatarImage src={preview || avatarAtual || undefined} className="object-cover w-full h-full" />
                 <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
                   {nome ? nome.slice(0, 2).toUpperCase() : "⚽"}
                 </AvatarFallback>

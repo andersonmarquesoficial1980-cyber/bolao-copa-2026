@@ -6,7 +6,7 @@ export function Avatar({ className, ...props }: React.HTMLAttributes<HTMLDivElem
 }
 
 export function AvatarImage({ className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
-  return <img className={cn("aspect-square h-full w-full", className)} {...props} />
+  return <img className={cn("aspect-square h-full w-full object-cover", className)} {...props} />
 }
 
 export function AvatarFallback({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
