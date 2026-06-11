@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
-import { RankingRace } from "@/components/RankingRace"
+import { RankingAoVivo } from "@/components/RankingAoVivo"
 import { RankingTable } from "@/components/RankingTable"
 import { CaixaTransparente } from "@/components/CaixaTransparente"
 import { BotaoPagamento } from "@/components/BotaoPagamento"
@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }, { data: meuPagamento }] = await Promise.all([
+  const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }, { data: meuPagamento }, { data: todosPalpites }, { data: jogosBanco }] = await Promise.all([
     supabase.from("profiles").select("nome").eq("id", user.id).single(),
     supabase.from("scores").select("total_pontos,acertos_exatos,acertos_resultado,total_palpites").eq("user_id", user.id).maybeSingle(),
     supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
@@ -23,7 +23,10 @@ export default async function DashboardPage() {
       .select("id,nome,avatar_url,scores(total_pontos,acertos_exatos,acertos_resultado,total_palpites)")
       .order("nome", { ascending: true }),
     supabase.from("registrations").select("valor_pago,status").eq("status", "paid"),
-    supabase.from("registrations").select("id,status").eq("user_id", user.id).eq("status", "paid").maybeSingle()
+    supabase.from("registrations").select("id,status").eq("user_id", user.id).eq("status", "paid").maybeSingle(),
+    // Palpites de todos para o ranking ao vivo
+    supabase.from("predictions").select("user_id,game_id,palpite_casa,palpite_fora"),
+    supabase.from("games").select("id,time_casa,time_fora,status").neq("status","cancelled")
   ])
 
   const totalPredictions = predResult.count ?? 0
@@ -46,6 +49,19 @@ export default async function DashboardPage() {
       profiles: { nome: p.nome, avatar_url: p.avatar_url },
     }))
     .sort((a, b) => b.total_pontos - a.total_pontos || b.acertos_exatos - a.acertos_exatos)
+
+  // Monta participantes para o ranking ao vivo (depois de normalizedRanking)
+  const participantesAoVivo = normalizedRanking.map(p => ({
+    user_id: p.user_id,
+    nome: p.profiles?.nome || "?",
+    avatar_url: p.profiles?.avatar_url,
+    pontos_fixos: p.total_pontos,
+    palpites: (todosPalpites || []).filter(t => t.user_id === p.user_id).map(t => ({
+      game_id: t.game_id,
+      palpite_casa: t.palpite_casa,
+      palpite_fora: t.palpite_fora,
+    })),
+  }))
 
   return (
     <div className="space-y-6">
@@ -103,7 +119,10 @@ export default async function DashboardPage() {
       {/* Ranking */}
       {ranking && ranking.length > 0 ? (
         <section className="space-y-4">
-          <RankingRace ranking={normalizedRanking} />
+          <RankingAoVivo
+            participantes={participantesAoVivo}
+            jogosBanco={(jogosBanco || []) as { id: string; time_casa: string; time_fora: string; status: string }[]}
+          />
           <RankingTable ranking={normalizedRanking} title="Classificação detalhada" />
         </section>
       ) : (
