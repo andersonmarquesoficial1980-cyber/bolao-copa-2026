@@ -33,7 +33,13 @@ export async function submitPredictionAction(formData: FormData) {
     .eq("id", gameId)
     .single()
 
-  if (!game || game.status !== "scheduled" || new Date(game.data_jogo) <= new Date()) {
+  if (!game || game.status !== "scheduled") {
+    redirect("/rodada?error=Este jogo não aceita mais palpites")
+  }
+
+  // Fecha palpites 1 hora antes do jogo
+  const cutoff = new Date(new Date(game.data_jogo).getTime() - 60 * 60 * 1000)
+  if (new Date() >= cutoff) {
     redirect("/rodada?error=Este jogo não aceita mais palpites")
   }
 
