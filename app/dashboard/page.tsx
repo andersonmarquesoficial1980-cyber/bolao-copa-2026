@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase"
 import { RankingRace } from "@/components/RankingRace"
 import { RankingTable } from "@/components/RankingTable"
 import { CaixaTransparente } from "@/components/CaixaTransparente"
+import { BotaoPagamento } from "@/components/BotaoPagamento"
 import { Score } from "@/types"
 
 export default async function DashboardPage() {
@@ -13,7 +14,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }] = await Promise.all([
+  const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }, { data: meuPagamento }] = await Promise.all([
     supabase.from("profiles").select("nome").eq("id", user.id).single(),
     supabase.from("scores").select("total_pontos,acertos_exatos,acertos_resultado,total_palpites").eq("user_id", user.id).maybeSingle(),
     supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
@@ -21,11 +22,14 @@ export default async function DashboardPage() {
     supabase.from("profiles")
       .select("id,nome,avatar_url,scores(total_pontos,acertos_exatos,acertos_resultado,total_palpites)")
       .order("nome", { ascending: true }),
-    supabase.from("registrations").select("valor_pago,status").eq("status", "paid")
+    supabase.from("registrations").select("valor_pago,status").eq("status", "paid"),
+    supabase.from("registrations").select("id,status").eq("user_id", user.id).eq("status", "paid").maybeSingle()
   ])
 
   const totalPredictions = predResult.count ?? 0
   const totalArrecadado = (pagamentos || []).reduce((sum, r) => sum + (r.valor_pago || 0), 0)
+  const jaPagou = !!meuPagamento
+  const profileEmail = user.email || ""
   const totalParticipantes = (ranking || []).length
 
   // Normaliza ranking para o formato Score esperado pelos componentes
@@ -86,13 +90,19 @@ export default async function DashboardPage() {
       />
 
       {/* Ações */}
-      <section className="flex flex-wrap gap-3">
+      <section className="flex flex-wrap items-center gap-3">
         <Link href="/rodada">
           <Button>⚽ Fazer palpites</Button>
         </Link>
         <Link href="/palpites">
           <Button variant="outline">👀 Ver palpites da galera</Button>
         </Link>
+        <BotaoPagamento
+          userId={user.id}
+          nome={profile?.nome || ""}
+          email={profileEmail}
+          jaPagou={jaPagou}
+        />
       </section>
 
       {/* Ranking */}
