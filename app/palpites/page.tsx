@@ -66,7 +66,7 @@ export default async function PalpitesPage() {
                         Resultado: {game.placar_casa}–{game.placar_fora}
                       </span>
                     )}
-                    <Badge variant="outline" className="text-xs">{formatDate(game.data_jogo)}</Badge>
+                    <span className="text-xs text-muted-foreground">{formatDate(game.data_jogo)}</span>
                   </div>
                 </div>
               </CardHeader>
