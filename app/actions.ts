@@ -37,6 +37,21 @@ export async function submitPredictionAction(formData: FormData) {
     redirect("/rodada?error=Este jogo não aceita mais palpites")
   }
 
+  // A partir de 13/06, exige pagamento confirmado
+  const dataJogo = new Date(game.data_jogo)
+  const corte = new Date("2026-06-13T00:00:00-03:00") // meia-noite Brasília
+  if (dataJogo >= corte) {
+    const { data: reg } = await supabase
+      .from("registrations")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("status", "paid")
+      .maybeSingle()
+    if (!reg) {
+      redirect("/dashboard?error=Faça sua inscrição de R$ 20,00 para palpitar nos jogos a partir de 13/06")
+    }
+  }
+
   // Fecha palpites 1 hora antes do jogo
   const cutoff = new Date(new Date(game.data_jogo).getTime() - 60 * 60 * 1000)
   if (new Date() >= cutoff) {

@@ -18,6 +18,7 @@ interface GameCardProps {
   game: Game
   prediction?: Prediction
   otherPredictions?: OtherPrediction[]
+  bloqueadoPorPagamento?: boolean
 }
 
 function statusLabel(status: string, hasStarted: boolean) {
@@ -26,7 +27,7 @@ function statusLabel(status: string, hasStarted: boolean) {
   return { label: "Agendado", color: "bg-blue-500" }
 }
 
-export function GameCard({ game, prediction, otherPredictions = [] }: GameCardProps) {
+export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPorPagamento = false }: GameCardProps) {
   // Fecha palpites 1 hora antes do jogo
   const cutoff = new Date(new Date(game.data_jogo).getTime() - 60 * 60 * 1000)
   const hasStarted = new Date() >= cutoff
@@ -82,8 +83,8 @@ export function GameCard({ game, prediction, otherPredictions = [] }: GameCardPr
               />
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={!canPredict}>
-            {canPredict ? "Salvar palpite" : hasStarted ? "Palpites encerrados" : "Encerrado"}
+          <Button type="submit" className="w-full" disabled={!canPredict || bloqueadoPorPagamento}>
+            {bloqueadoPorPagamento ? "🔒 Pague R$ 20 para palpitar" : canPredict ? "Salvar palpite" : hasStarted ? "Palpites encerrados" : "Encerrado"}
           </Button>
         </form>
 

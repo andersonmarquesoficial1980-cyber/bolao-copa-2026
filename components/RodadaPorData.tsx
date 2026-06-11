@@ -15,6 +15,8 @@ interface RodadaPorDataProps {
   games: Game[]
   predictionMap: Map<string, Prediction>
   allPredictionsMap: Map<string, OtherPrediction[]>
+  jaPagou: boolean
+  corte13: Date
 }
 
 function dateLabel(dateStr: string): string {
@@ -34,7 +36,7 @@ function dateDayKey(dateStr: string): string {
   })
 }
 
-export function RodadaPorData({ games, predictionMap, allPredictionsMap }: RodadaPorDataProps) {
+export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou, corte13 }: RodadaPorDataProps) {
   // Agrupa jogos por dia
   const grouped = new Map<string, { label: string; games: Game[] }>()
   for (const game of games) {
@@ -85,14 +87,18 @@ export function RodadaPorData({ games, predictionMap, allPredictionsMap }: Rodad
             {/* Jogos do dia */}
             {isOpen && (
               <div className="grid gap-4 p-4 md:grid-cols-2 bg-white">
-                {dayGames.map(game => (
-                  <GameCard
-                    key={game.id}
-                    game={game}
-                    prediction={predictionMap.get(game.id)}
-                    otherPredictions={allPredictionsMap.get(game.id) || []}
-                  />
-                ))}
+                {dayGames.map(game => {
+                  const bloqueado = !jaPagou && new Date(game.data_jogo) >= corte13
+                  return (
+                    <GameCard
+                      key={game.id}
+                      game={game}
+                      prediction={predictionMap.get(game.id)}
+                      otherPredictions={allPredictionsMap.get(game.id) || []}
+                      bloqueadoPorPagamento={bloqueado}
+                    />
+                  )
+                })}
               </div>
             )}
           </div>
