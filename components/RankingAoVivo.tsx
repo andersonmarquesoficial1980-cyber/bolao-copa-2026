@@ -129,12 +129,13 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
       {/* Corrida */}
       <div className="space-y-2">
         {rankingOrdenado.map((item, index) => {
-          // Calcula posição real considerando empates
-          const posicao = index === 0 ? 1 : (
-            rankingOrdenado[index].total === rankingOrdenado[index - 1].total
-              ? rankingOrdenado.slice(0, index).findIndex(r => r.total === item.total) + 1
-              : index + 1
-          )
+          // Posição: 1º grupo de empate = 1º, próximo grupo = 2º, etc.
+          const grupos = rankingOrdenado.reduce<number[][]>((acc, r, i) => {
+            if (i === 0 || r.total !== rankingOrdenado[i-1].total) acc.push([])
+            acc[acc.length-1].push(i)
+            return acc
+          }, [])
+          const posicao = grupos.findIndex(g => g.includes(index)) + 1
 
           const pct = Math.max(4, (item.total / maxPontos) * 100)
           const nome = item.nome || "?"
