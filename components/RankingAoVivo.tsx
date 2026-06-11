@@ -102,8 +102,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
 
   // Ordena ranking por total (pontos fixos + provisórios)
   const rankingOrdenado = [...ranking].sort((a, b) => b.total - a.total || b.pontos_fixos - a.pontos_fixos)
-
-  const maxPontos = Math.max(...ranking.map(r => r.total), 1)
+  const maxPontos = Math.max(...rankingOrdenado.map(r => r.total), 1)
   const temJogoAoVivo = !!jogoAtual
 
   return (
@@ -130,12 +129,19 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
       {/* Corrida */}
       <div className="space-y-2">
         {rankingOrdenado.map((item, index) => {
+          // Calcula posição real considerando empates
+          const posicao = index === 0 ? 1 : (
+            rankingOrdenado[index].total === rankingOrdenado[index - 1].total
+              ? rankingOrdenado.slice(0, index).findIndex(r => r.total === item.total) + 1
+              : index + 1
+          )
+
           const pct = Math.max(4, (item.total / maxPontos) * 100)
           const nome = item.nome || "?"
           const initials = nome.slice(0, 2).toUpperCase()
-          const trackColor = index === 0
+          const trackColor = posicao === 1
             ? "bg-yellow-50 border-yellow-400"
-            : index === 1
+            : posicao === 2
             ? "bg-zinc-50 border-zinc-400"
             : "bg-blue-50 border-blue-200"
 
@@ -147,7 +153,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
 
               <div className="flex items-center gap-2 relative z-0 pr-8">
                 <span className="text-lg w-7 text-center shrink-0">
-                  {index < 2 ? MEDALS[index] : `${index + 1}º`}
+                  {posicao === 1 ? MEDALS[0] : posicao === 2 ? MEDALS[1] : `${posicao}º`}
                 </span>
 
                 <div className="flex-1 relative h-10">
