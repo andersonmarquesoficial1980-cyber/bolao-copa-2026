@@ -95,10 +95,13 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
   }, [participantes, jogosBanco])
 
   useEffect(() => {
-    buscarPlacar()
-    const interval = setInterval(buscarPlacar, 30000) // atualiza a cada 30s
+    buscarPlacar() // busca imediatamente no mount
+    const interval = setInterval(buscarPlacar, 30000)
     return () => clearInterval(interval)
   }, [buscarPlacar])
+
+  // Ordena ranking por total (pontos fixos + provisórios)
+  const rankingOrdenado = [...ranking].sort((a, b) => b.total - a.total || b.pontos_fixos - a.pontos_fixos)
 
   const maxPontos = Math.max(...ranking.map(r => r.total), 1)
   const temJogoAoVivo = !!jogoAtual
@@ -126,7 +129,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
 
       {/* Corrida */}
       <div className="space-y-2">
-        {ranking.map((item, index) => {
+        {rankingOrdenado.map((item, index) => {
           const pct = Math.max(4, (item.total / maxPontos) * 100)
           const nome = item.nome || "?"
           const initials = nome.slice(0, 2).toUpperCase()
