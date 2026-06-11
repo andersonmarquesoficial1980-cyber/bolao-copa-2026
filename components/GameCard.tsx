@@ -85,8 +85,8 @@ export function GameCard({ game, prediction, otherPredictions = [] }: GameCardPr
           </Button>
         </form>
 
-        {/* Palpites dos outros (visível após início ou se já palpitou) */}
-        {(hasStarted || game.status === "finished") && otherPredictions.length > 0 && (
+        {/* Palpites de todos — sempre visível */}
+        {otherPredictions.length > 0 && (
           <div className="space-y-2 border-t pt-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Palpites da galera</p>
             <div className="flex flex-wrap gap-2">
