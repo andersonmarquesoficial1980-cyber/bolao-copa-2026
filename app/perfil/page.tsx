@@ -20,6 +20,12 @@ export default function PerfilPage() {
   const [userId, setUserId] = useState("")
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Alterar senha
+  const [novaSenha, setNovaSenha] = useState("")
+  const [confirmSenha, setConfirmSenha] = useState("")
+  const [salvandoSenha, setSalvandoSenha] = useState(false)
+  const [msgSenha, setMsgSenha] = useState("")
+
   useEffect(() => {
     async function carregar() {
       const supabase = createSupabaseBrowserClient()
@@ -127,6 +133,71 @@ export default function PerfilPage() {
 
             <Button type="submit" className="w-full" disabled={salvando}>
               {salvando ? "Salvando..." : "Salvar perfil"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      {/* Alterar Senha */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">🔒 Alterar Senha</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault()
+              setMsgSenha("")
+              if (novaSenha.length < 6) {
+                setMsgSenha("A senha deve ter pelo menos 6 caracteres.")
+                return
+              }
+              if (novaSenha !== confirmSenha) {
+                setMsgSenha("As senhas não coincidem.")
+                return
+              }
+              setSalvandoSenha(true)
+              const supabase = createSupabaseBrowserClient()
+              const { error } = await supabase.auth.updateUser({ password: novaSenha })
+              if (error) {
+                setMsgSenha("Erro: " + error.message)
+              } else {
+                setMsgSenha("✅ Senha alterada com sucesso!")
+                setNovaSenha("")
+                setConfirmSenha("")
+              }
+              setSalvandoSenha(false)
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-1">
+              <Label htmlFor="novaSenha">Nova senha</Label>
+              <Input
+                id="novaSenha"
+                type="password"
+                value={novaSenha}
+                onChange={e => setNovaSenha(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="confirmSenha">Confirmar nova senha</Label>
+              <Input
+                id="confirmSenha"
+                type="password"
+                value={confirmSenha}
+                onChange={e => setConfirmSenha(e.target.value)}
+                placeholder="Repita a senha"
+                required
+              />
+            </div>
+            {msgSenha && (
+              <p className={`text-sm text-center ${msgSenha.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+                {msgSenha}
+              </p>
+            )}
+            <Button type="submit" className="w-full" disabled={salvandoSenha}>
+              {salvandoSenha ? "Salvando..." : "Alterar senha"}
             </Button>
           </form>
         </CardContent>
