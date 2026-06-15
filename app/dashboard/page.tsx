@@ -7,6 +7,7 @@ import { RankingTable } from "@/components/RankingTable"
 import { CaixaTransparente } from "@/components/CaixaTransparente"
 import { BotaoPagamento } from "@/components/BotaoPagamento"
 import { Score } from "@/types"
+import { BannerCorrecao } from "@/components/BannerCorrecao"
 
 export default async function DashboardPage() {
   const supabase = createSupabaseServerClient()
@@ -15,7 +16,8 @@ export default async function DashboardPage() {
   if (!user) return null
 
   const [{ data: profile }, { data: score }, predResult, { data: ranking }, { data: pagamentos }, { data: meuPagamento }, { data: todosPalpites }, { data: jogosBanco }] = await Promise.all([
-    supabase.from("profiles").select("nome").eq("id", user.id).single(),
+    // profile inclui correcao_lida agora
+    supabase.from("profiles").select("nome, correcao_lida").eq("id", user.id).single(),
     supabase.from("scores").select("total_pontos,acertos_exatos,acertos_resultado,total_palpites").eq("user_id", user.id).maybeSingle(),
     supabase.from("predictions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     // Busca todos que palpitaram, com scores se existirem
@@ -65,6 +67,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Banner correção — some após o usuário clicar em "Li e entendi" */}
+      {!(profile as any)?.correcao_lida && (
+        <BannerCorrecao userId={user.id} />
+      )}
+
       {/* Saudação */}
       <section className="space-y-1">
         <h1 className="text-3xl font-bold text-primary">Olá, {profile?.nome || "participante"} ⚽</h1>

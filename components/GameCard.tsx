@@ -28,8 +28,8 @@ function statusLabel(status: string, hasStarted: boolean) {
 }
 
 export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPorPagamento = false }: GameCardProps) {
-  // Fecha palpites 1 hora antes do jogo
-  const cutoff = new Date(new Date(game.data_jogo).getTime() - 60 * 60 * 1000)
+  // Fecha palpites 10 minutos antes do jogo
+  const cutoff = new Date(new Date(game.data_jogo).getTime() - 10 * 60 * 1000)
   const hasStarted = new Date() >= cutoff
   const { label, color } = statusLabel(game.status, hasStarted)
   const canPredict = !hasStarted && game.status === "scheduled"

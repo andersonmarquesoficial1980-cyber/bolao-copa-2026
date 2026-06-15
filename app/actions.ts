@@ -52,8 +52,8 @@ export async function submitPredictionAction(formData: FormData) {
     }
   }
 
-  // Fecha palpites 1 hora antes do jogo
-  const cutoff = new Date(new Date(game.data_jogo).getTime() - 60 * 60 * 1000)
+  // Fecha palpites 10 minutos antes do jogo
+  const cutoff = new Date(new Date(game.data_jogo).getTime() - 10 * 60 * 1000)
   if (new Date() >= cutoff) {
     redirect("/rodada?error=Este jogo não aceita mais palpites")
   }
