@@ -58,6 +58,9 @@ export default async function AdminPage() {
         <Link href="/admin/inscritos">
           <Button variant="outline">Inscritos e pagamentos</Button>
         </Link>
+        <Link href="/admin/relatorio-palpites">
+          <Button variant="outline">🖨️ Relatório de palpites</Button>
+        </Link>
       </section>
     </div>
   )

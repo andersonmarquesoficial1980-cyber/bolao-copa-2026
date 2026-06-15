@@ -120,6 +120,9 @@ export default async function DashboardPage() {
         <Link href="/palpites">
           <Button variant="outline">👀 Ver palpites da galera</Button>
         </Link>
+        <Link href="/correcao">
+          <Button variant="outline">📋 Meus palpites</Button>
+        </Link>
         <BotaoPagamento jaPagou={jaPagou} />
       </section>
 
