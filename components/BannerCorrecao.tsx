@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 export function BannerCorrecao({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(false)
   const [dismissed, setDismissed] = useState(false)
-  const supabase = createClientComponentClient()
+  const supabase = createSupabaseBrowserClient()
   const router = useRouter()
 
   async function handleDismiss() {
