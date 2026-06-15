@@ -1,117 +1,79 @@
 import { createSupabaseServerClient } from "@/lib/supabase"
-import { formatDate } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { PalpitesClient } from "./PalpitesClient"
+
+function getOutcome(c: number, f: number) {
+  if (c > f) return "casa"
+  if (f > c) return "fora"
+  return "empate"
+}
 
 export default async function PalpitesPage() {
   const supabase = createSupabaseServerClient()
 
-  // Busca todos os jogos com todos os palpites
-  const { data: games } = await supabase
-    .from("games")
-    .select("id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
-    .neq("status", "cancelled")
-    .order("data_jogo", { ascending: true })
-
-  const { data: predictions } = await supabase
-    .from("predictions")
-    .select("game_id,palpite_casa,palpite_fora,user_id,profiles(nome,avatar_url)")
-    .order("user_id")
+  const [{ data: games }, { data: predictions }] = await Promise.all([
+    supabase
+      .from("games")
+      .select("id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
+      .neq("status", "cancelled")
+      .order("data_jogo", { ascending: true }),
+    supabase
+      .from("predictions")
+      .select("game_id,palpite_casa,palpite_fora,user_id,profiles(nome,avatar_url)")
+      .order("user_id"),
+  ])
 
   // Agrupa palpites por jogo
-  const predByGame = new Map<string, { nome: string; avatar_url?: string; palpite_casa: number; palpite_fora: number }[]>()
+  const predByGame = new Map<string, { nome: string; palpite_casa: number; palpite_fora: number }[]>()
   for (const p of predictions || []) {
     const profile = p.profiles as unknown as { nome: string; avatar_url?: string } | null
     const arr = predByGame.get(p.game_id) || []
-    arr.push({
-      nome: profile?.nome || "?",
-      avatar_url: profile?.avatar_url,
-      palpite_casa: p.palpite_casa,
-      palpite_fora: p.palpite_fora,
-    })
+    arr.push({ nome: profile?.nome || "?", palpite_casa: p.palpite_casa, palpite_fora: p.palpite_fora })
     predByGame.set(p.game_id, arr)
   }
 
-  const gamesWithPalpites = (games || []).filter(g => (predByGame.get(g.id) || []).length > 0)
+  // Monta jogos com palpites enriquecidos
+  const jogos = (games || [])
+    .filter(g => (predByGame.get(g.id) || []).length > 0)
+    .map(g => {
+      const dt = new Date(g.data_jogo)
+      const dataLabel = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" })
+      const horaLabel = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })
+
+      const palpites = (predByGame.get(g.id) || []).map(p => {
+        let acerto: "exato" | "resultado" | null = null
+        if (g.status === "finished" && g.placar_casa !== null && g.placar_fora !== null) {
+          if (p.palpite_casa === g.placar_casa && p.palpite_fora === g.placar_fora) {
+            acerto = "exato"
+          } else if (getOutcome(p.palpite_casa, p.palpite_fora) === getOutcome(g.placar_casa, g.placar_fora)) {
+            acerto = "resultado"
+          }
+        }
+        return { ...p, acerto }
+      })
+
+      return {
+        id: g.id,
+        time_casa: g.time_casa,
+        time_fora: g.time_fora,
+        bandeira_casa: g.bandeira_casa ?? "",
+        bandeira_fora: g.bandeira_fora ?? "",
+        data_jogo: g.data_jogo,
+        placar_casa: g.placar_casa ?? null,
+        placar_fora: g.placar_fora ?? null,
+        status: g.status,
+        dataLabel,
+        horaLabel,
+        palpites,
+      }
+    })
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-primary">⚽ Palpites da Galera</h1>
-      <p className="text-muted-foreground text-sm">Veja o que todo mundo apostou em cada jogo.</p>
-
-      {gamesWithPalpites.length === 0 && (
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            Nenhum palpite ainda. Seja o primeiro!
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-4">
-        {gamesWithPalpites.map(game => {
-          const palpites = predByGame.get(game.id) || []
-          const finished = game.status === "finished"
-
-          return (
-            <Card key={game.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <CardTitle className="text-base">
-                    {game.bandeira_casa} {game.time_casa} × {game.time_fora} {game.bandeira_fora}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {finished && game.placar_casa !== null && (
-                      <span className="text-sm font-bold text-primary">
-                        Resultado: {game.placar_casa}–{game.placar_fora}
-                      </span>
-                    )}
-                    <span className="text-xs text-muted-foreground">{formatDate(game.data_jogo)}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="divide-y">
-                  {palpites.map((p, i) => {
-                    // Verifica acerto se jogo finalizado
-                    let acerto = null
-                    if (finished && game.placar_casa !== null) {
-                      if (p.palpite_casa === game.placar_casa && p.palpite_fora === game.placar_fora) {
-                        acerto = "exato"
-                      } else {
-                        const resCasa = Math.sign(game.placar_casa! - game.placar_fora!)
-                        const resPalpite = Math.sign(p.palpite_casa - p.palpite_fora)
-                        if (resCasa === resPalpite) acerto = "resultado"
-                      }
-                    }
-
-                    return (
-                      <div key={i} className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
-                              {p.nome.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                            {p.avatar_url && <AvatarFallback>{p.nome.slice(0,2).toUpperCase()}</AvatarFallback>}
-                          </Avatar>
-                          <span className="font-medium text-sm">{p.nome}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold">
-                            {p.palpite_casa} × {p.palpite_fora}
-                          </span>
-                          {acerto === "exato" && <Badge className="bg-green-500 text-white text-xs">✅ Exato</Badge>}
-                          {acerto === "resultado" && <Badge className="bg-blue-500 text-white text-xs">👍 Resultado</Badge>}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+      <div>
+        <h1 className="text-3xl font-bold text-primary">⚽ Palpites da Galera</h1>
+        <p className="text-muted-foreground text-sm mt-1">Veja o que todo mundo apostou em cada jogo.</p>
       </div>
+      <PalpitesClient jogos={jogos} />
     </div>
   )
 }
