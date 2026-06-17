@@ -96,14 +96,14 @@ export default async function MeusPalpitesPage() {
         {meusPalpites.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum palpite nos jogos encerrados ainda.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border text-sm">
-            <table className="w-full">
+          <div className="overflow-x-auto rounded-xl border text-sm">
+            <table className="w-full min-w-[320px]">
               <thead className="bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">Jogo</th>
-                  <th className="px-3 py-2 text-center font-medium">Resultado</th>
-                  <th className="px-3 py-2 text-center font-medium">Seu palpite</th>
-                  <th className="px-3 py-2 text-center font-medium">Pts</th>
+                  <th className="px-2 py-2 text-left font-medium">Jogo</th>
+                  <th className="px-2 py-2 text-center font-medium whitespace-nowrap">Resultado</th>
+                  <th className="px-2 py-2 text-center font-medium whitespace-nowrap">Palpite</th>
+                  <th className="px-2 py-2 text-center font-medium w-10">Pts</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,22 +112,21 @@ export default async function MeusPalpitesPage() {
                   const icon = p.pts === 3 ? "✅" : p.pts === 1 ? "⚽" : "❌"
                   return (
                     <tr key={p.id} className={i % 2 === 0 ? "bg-white" : "bg-muted/30"}>
-                      <td className="px-3 py-2">
-                        <span className="font-medium">{g.bandeira_casa} {g.time_casa}</span>
-                        <span className="text-muted-foreground mx-1">vs</span>
-                        <span className="font-medium">{g.time_fora} {g.bandeira_fora}</span>
+                      <td className="px-2 py-2">
+                        <div className="font-medium leading-tight">{g.bandeira_casa} {g.time_casa}</div>
+                        <div className="text-muted-foreground text-xs">vs {g.bandeira_fora} {g.time_fora}</div>
                       </td>
-                      <td className="px-3 py-2 text-center font-bold">{g.placar_casa}–{g.placar_fora}</td>
-                      <td className="px-3 py-2 text-center text-muted-foreground">{p.palpite_casa}–{p.palpite_fora}</td>
-                      <td className="px-3 py-2 text-center font-bold">{icon} {p.pts}</td>
+                      <td className="px-2 py-2 text-center font-bold whitespace-nowrap">{g.placar_casa}–{g.placar_fora}</td>
+                      <td className="px-2 py-2 text-center text-muted-foreground whitespace-nowrap">{p.palpite_casa}–{p.palpite_fora}</td>
+                      <td className="px-2 py-2 text-center font-bold">{icon} {p.pts}</td>
                     </tr>
                   )
                 })}
               </tbody>
               <tfoot className="bg-muted font-bold">
                 <tr>
-                  <td colSpan={3} className="px-3 py-2 text-right">Total</td>
-                  <td className="px-3 py-2 text-center">{totalPts}</td>
+                  <td colSpan={3} className="px-2 py-2 text-right">Total</td>
+                  <td className="px-2 py-2 text-center">{totalPts}</td>
                 </tr>
               </tfoot>
             </table>
