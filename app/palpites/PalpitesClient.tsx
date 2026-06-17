@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { FlagImg } from "@/components/FlagImg"
 import { Card, CardContent } from "@/components/ui/card"
 
 type Palpite = {
@@ -92,8 +93,10 @@ export function PalpitesClient({ jogos }: { jogos: Jogo[] }) {
               className="rounded-xl border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
             >
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <p className="font-bold text-base">
-                  {j.bandeira_casa} {j.time_casa} <span className="text-muted-foreground font-normal">×</span> {j.time_fora} {j.bandeira_fora}
+                <p className="font-bold text-base flex items-center gap-1.5 flex-wrap">
+                  <FlagImg emoji={j.bandeira_casa} size="20" className="w-6 h-4 rounded-sm" />
+                  {j.time_casa} <span className="text-muted-foreground font-normal">×</span> {j.time_fora}
+                  <FlagImg emoji={j.bandeira_fora} size="20" className="w-6 h-4 rounded-sm" />
                 </p>
                 <div className="flex items-center gap-2">
                   {j.status === "finished" && j.placar_casa !== null && (
@@ -121,8 +124,10 @@ export function PalpitesClient({ jogos }: { jogos: Jogo[] }) {
       </button>
 
       <div className="rounded-xl border p-4 space-y-1">
-        <p className="font-bold text-lg">
-          {j.bandeira_casa} {j.time_casa} × {j.time_fora} {j.bandeira_fora}
+        <p className="font-bold text-lg flex items-center gap-1.5 flex-wrap">
+          <FlagImg emoji={j.bandeira_casa} size="32" className="w-8 h-6 rounded-sm shadow-sm" />
+          {j.time_casa} × {j.time_fora}
+          <FlagImg emoji={j.bandeira_fora} size="32" className="w-8 h-6 rounded-sm shadow-sm" />
         </p>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <span>{j.dataLabel} · {j.horaLabel}</span>

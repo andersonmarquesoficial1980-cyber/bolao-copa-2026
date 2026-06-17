@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { redirect } from "next/navigation"
+import { FlagImg } from "@/components/FlagImg"
 
 function getOutcome(c: number, f: number) {
   if (c > f) return "casa"
@@ -113,8 +114,13 @@ export default async function MeusPalpitesPage() {
                   return (
                     <tr key={p.id} className={i % 2 === 0 ? "bg-white" : "bg-muted/30"}>
                       <td className="px-2 py-2">
-                        <div className="font-medium leading-tight">{g.bandeira_casa} {g.time_casa}</div>
-                        <div className="text-muted-foreground text-xs">vs {g.bandeira_fora} {g.time_fora}</div>
+                        <div className="font-medium leading-tight flex items-center gap-1">
+                          <FlagImg emoji={g.bandeira_casa} size="16" className="w-4 h-3 rounded-sm" />
+                          {g.time_casa}
+                        </div>
+                        <div className="text-muted-foreground text-xs flex items-center gap-1">
+                          vs <FlagImg emoji={g.bandeira_fora} size="16" className="w-4 h-3 rounded-sm" /> {g.time_fora}
+                        </div>
                       </td>
                       <td className="px-2 py-2 text-center font-bold whitespace-nowrap">{g.placar_casa}–{g.placar_fora}</td>
                       <td className="px-2 py-2 text-center text-muted-foreground whitespace-nowrap">{p.palpite_casa}–{p.palpite_fora}</td>

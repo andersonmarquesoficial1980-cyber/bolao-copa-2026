@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { FlagImg } from "@/components/FlagImg"
 
 interface OtherPrediction {
   palpite_casa: number
@@ -38,8 +39,12 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
     <Card className="flex flex-col">
       <CardHeader className="space-y-2 pb-2">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base leading-tight">
-            {game.bandeira_casa} {game.time_casa} × {game.time_fora} {game.bandeira_fora}
+          <CardTitle className="text-base leading-tight flex items-center gap-1.5 flex-wrap">
+            <FlagImg emoji={game.bandeira_casa ?? ""} size="32" className="w-7 h-5 rounded-sm shadow-sm" />
+            {game.time_casa}
+            <span className="text-muted-foreground">×</span>
+            {game.time_fora}
+            <FlagImg emoji={game.bandeira_fora ?? ""} size="32" className="w-7 h-5 rounded-sm shadow-sm" />
           </CardTitle>
           <Badge className={`${color} text-white shrink-0 text-xs`}>{label}</Badge>
         </div>
@@ -102,8 +107,10 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
                     </AvatarFallback>
                   </Avatar>
                   <span className="font-medium">{p.profiles?.nome?.split(" ")[0]}</span>
-                  <span className="text-muted-foreground">
-                    {game.bandeira_casa} {p.palpite_casa} × {p.palpite_fora} {game.bandeira_fora}
+                  <span className="text-muted-foreground flex items-center gap-0.5">
+                    <FlagImg emoji={game.bandeira_casa ?? ""} size="16" className="w-4 h-3" />
+                    {p.palpite_casa} × {p.palpite_fora}
+                    <FlagImg emoji={game.bandeira_fora ?? ""} size="16" className="w-4 h-3" />
                   </span>
                 </div>
               ))}
