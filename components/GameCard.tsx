@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { FlagImg } from "@/components/FlagImg"
+import { PlacarBandeiras } from "@/components/PlacarBandeiras"
+import { TituloJogo } from "@/components/TituloJogo"
 
 interface OtherPrediction {
   palpite_casa: number
@@ -39,12 +40,14 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
     <Card className="flex flex-col">
       <CardHeader className="space-y-2 pb-2">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base leading-tight flex items-center gap-1.5 flex-wrap">
-            <FlagImg emoji={game.bandeira_casa ?? ""} size="32" className="w-7 h-5 rounded-sm shadow-sm" />
-            {game.time_casa}
-            <span className="text-muted-foreground">×</span>
-            {game.time_fora}
-            <FlagImg emoji={game.bandeira_fora ?? ""} size="32" className="w-7 h-5 rounded-sm shadow-sm" />
+          <CardTitle className="text-base leading-tight">
+            <TituloJogo
+              bandeiraCasa={game.bandeira_casa ?? ""}
+              bandeiraFora={game.bandeira_fora ?? ""}
+              timeCasa={game.time_casa}
+              timoFora={game.time_fora}
+              flagSize="20"
+            />
           </CardTitle>
           <Badge className={`${color} text-white shrink-0 text-xs`}>{label}</Badge>
         </div>
@@ -52,11 +55,12 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
 
         {/* Placar real se finalizado — bandeiras grandes + placar */}
         {game.status === "finished" && game.placar_casa !== null && (
-          <div className="flex items-center justify-center gap-3">
-            <FlagImg emoji={game.bandeira_casa ?? ""} size="48" className="w-14 h-10 rounded shadow-sm" />
-            <p className="text-2xl font-bold text-primary">{game.placar_casa} – {game.placar_fora}</p>
-            <FlagImg emoji={game.bandeira_fora ?? ""} size="48" className="w-14 h-10 rounded shadow-sm" />
-          </div>
+          <PlacarBandeiras
+            bandeiraCasa={game.bandeira_casa ?? ""}
+            bandeiraFora={game.bandeira_fora ?? ""}
+            placarCasa={game.placar_casa}
+            placarFora={game.placar_fora}
+          />
         )}
       </CardHeader>
 
@@ -109,10 +113,8 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
                     </AvatarFallback>
                   </Avatar>
                   <span className="font-medium">{p.profiles?.nome?.split(" ")[0]}</span>
-                  <span className="text-muted-foreground flex items-center gap-0.5">
-                    <FlagImg emoji={game.bandeira_casa ?? ""} size="16" className="w-4 h-3" />
-                    {p.palpite_casa} × {p.palpite_fora}
-                    <FlagImg emoji={game.bandeira_fora ?? ""} size="16" className="w-4 h-3" />
+                  <span className="text-muted-foreground">
+                    {game.bandeira_casa} {p.palpite_casa} × {p.palpite_fora} {game.bandeira_fora}
                   </span>
                 </div>
               ))}
