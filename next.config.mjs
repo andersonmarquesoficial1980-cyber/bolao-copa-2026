@@ -4,7 +4,15 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "2mb"
     }
-  }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+    ],
+  },
 }
 
 export default nextConfig
