@@ -50,11 +50,13 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
         </div>
         <p className="text-xs text-muted-foreground">{formatDate(game.data_jogo)}</p>
 
-        {/* Placar real se finalizado */}
+        {/* Placar real se finalizado — bandeiras grandes + placar */}
         {game.status === "finished" && game.placar_casa !== null && (
-          <p className="text-center text-2xl font-bold text-primary">
-            {game.placar_casa} – {game.placar_fora}
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <FlagImg emoji={game.bandeira_casa ?? ""} size="48" className="w-14 h-10 rounded shadow-sm" />
+            <p className="text-2xl font-bold text-primary">{game.placar_casa} – {game.placar_fora}</p>
+            <FlagImg emoji={game.bandeira_fora ?? ""} size="48" className="w-14 h-10 rounded shadow-sm" />
+          </div>
         )}
       </CardHeader>
 
