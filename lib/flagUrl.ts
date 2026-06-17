@@ -25,8 +25,9 @@ const EMOJI_TO_CODE: Record<string, string> = {
  * Retorna URL da imagem de bandeira para o emoji dado.
  * Se não tiver mapeamento, retorna null (usar emoji como fallback).
  */
-export function flagUrl(emoji: string, size: "16" | "20" | "32" | "48" | "64" = "32"): string | null {
+export function flagUrl(emoji: string, _size?: string): string | null {
   const code = EMOJI_TO_CODE[emoji?.trim()]
   if (code === undefined || code === "") return null
-  return `https://flagcdn.com/w${size}/${code}.png`
+  // Usa arquivo local em /public/flags/ — sem dependência externa
+  return `/flags/${code}.png`
 }
