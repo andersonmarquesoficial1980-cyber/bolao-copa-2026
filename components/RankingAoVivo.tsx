@@ -179,7 +179,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
                   {/* Carrinho na ponta da barra — dentro mas sem sair */}
                   <div
                     className="absolute top-1/2 -translate-y-1/2 -translate-x-full transition-all duration-1000 text-base leading-none"
-                    style={{ left: `${Math.min(pct, 94)}%`, filter: posicao === 1 ? "drop-shadow(0 0 3px gold)" : undefined }}
+                    style={{ left: `${Math.min(pct, 94)}%`, transform: "translateX(-100%) translateY(-50%) scaleX(-1)", filter: posicao === 1 ? "drop-shadow(0 0 3px gold)" : undefined }}
                   >
                     🏎️
                   </div>
