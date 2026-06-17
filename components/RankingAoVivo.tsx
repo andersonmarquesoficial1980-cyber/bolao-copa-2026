@@ -164,14 +164,19 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
                     style={{ width: `${pct}%` }}
                   />
                   <div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-1000"
-                    style={{ left: `${pct}%` }}
+                    className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000"
+                    style={{ left: `${pct}%`, transform: "translateX(-50%) translateY(-50%)" }}
                   >
-                    <div className="relative">
-                      <Avatar className="h-9 w-9 border-2 border-white shadow-md ring-2 ring-blue-400">
-                        <AvatarFallback className="text-xs font-bold bg-blue-600 text-white">{initials}</AvatarFallback>
-                      </Avatar>
-                      <span className="absolute -bottom-1 -right-1 text-sm">⚽</span>
+                    <div className="flex items-center gap-0.5">
+                      {/* Carrinho de corrida */}
+                      <span className="text-xl leading-none select-none" style={{ filter: posicao === 1 ? "drop-shadow(0 0 4px gold)" : undefined }}>🏎️</span>
+                      {/* Avatar com foto */}
+                      <div className="relative">
+                        <Avatar className="h-9 w-9 border-2 border-white shadow-md ring-2 ring-blue-400">
+                          <AvatarImage src={item.avatar_url || undefined} alt={nome} />
+                          <AvatarFallback className="text-xs font-bold bg-blue-600 text-white">{initials}</AvatarFallback>
+                        </Avatar>
+                      </div>
                     </div>
                   </div>
                 </div>
