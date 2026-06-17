@@ -18,19 +18,21 @@ export function TituloJogo({ bandeiraCasa, bandeiraFora, timeCasa, timoFora, cla
 
   return (
     <span className={`flex items-center gap-1.5 flex-wrap ${className}`}>
-      {urlCasa
+      {urlCasa ? (
         // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={urlCasa} alt={bandeiraCasa} width={px} height={Math.round(px * 0.75)} className="rounded-sm shadow-sm inline-block object-contain" style={{ verticalAlign: "middle" }} />
-        : <span>{bandeiraCasa}</span>
-      }
+        <img src={urlCasa} alt="" width={px} height={Math.round(px * 0.75)} className="rounded-sm shadow-sm inline-block object-contain" style={{ verticalAlign: "middle" }} />
+      ) : (
+        <span>{bandeiraCasa}</span>
+      )}
       {timeCasa}
       <span className="text-muted-foreground">×</span>
       {timoFora}
-      {urlFora
+      {urlFora ? (
         // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={urlFora} alt={bandeiraFora} width={px} height={Math.round(px * 0.75)} className="rounded-sm shadow-sm inline-block object-contain" style={{ verticalAlign: "middle" }} />
-        : <span>{bandeiraFora}</span>
-      }
+        <img src={urlFora} alt="" width={px} height={Math.round(px * 0.75)} className="rounded-sm shadow-sm inline-block object-contain" style={{ verticalAlign: "middle" }} />
+      ) : (
+        <span>{bandeiraFora}</span>
+      )}
     </span>
   )
 }

@@ -14,18 +14,20 @@ export function PlacarBandeiras({ bandeiraCasa, bandeiraFora, placarCasa, placar
   const urlFora = flagUrl(bandeiraFora, "48")
 
   return (
-    <div className="flex items-center justify-center gap-3 my-1">
-      {urlCasa
+    <div className="flex items-center justify-center gap-4 my-2">
+      {urlCasa ? (
         // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={urlCasa} alt={bandeiraCasa} width={56} height={42} className="rounded shadow-sm object-contain" />
-        : <span style={{ fontSize: "2rem" }}>{bandeiraCasa}</span>
-      }
-      <p className="text-2xl font-bold text-primary">{placarCasa ?? 0} – {placarFora ?? 0}</p>
-      {urlFora
+        <img src={urlCasa} alt="" width={72} height={54} className="rounded-md shadow object-contain" />
+      ) : (
+        <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>{bandeiraCasa}</span>
+      )}
+      <p className="text-3xl font-bold text-primary">{placarCasa ?? 0} – {placarFora ?? 0}</p>
+      {urlFora ? (
         // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={urlFora} alt={bandeiraFora} width={56} height={42} className="rounded shadow-sm object-contain" />
-        : <span style={{ fontSize: "2rem" }}>{bandeiraFora}</span>
-      }
+        <img src={urlFora} alt="" width={72} height={54} className="rounded-md shadow object-contain" />
+      ) : (
+        <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>{bandeiraFora}</span>
+      )}
     </div>
   )
 }
