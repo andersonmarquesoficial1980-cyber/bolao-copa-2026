@@ -1,3 +1,5 @@
+"use client"
+
 import { flagUrl } from "@/lib/flagUrl"
 
 interface Props {
