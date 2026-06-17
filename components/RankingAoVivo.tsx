@@ -147,47 +147,45 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
             : "bg-blue-50 border-blue-200"
 
           return (
-            <div key={item.user_id} className={`rounded-xl border-2 ${trackColor} px-3 pt-2 pb-2`}>
-              {/* Linha superior: posição + nome + pontos */}
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-base w-7 text-center shrink-0 font-bold">
-                    {posicao === 1 ? MEDALS[0] : posicao === 2 ? MEDALS[1] : `${posicao}º`}
-                  </span>
-                  <p className="text-sm font-semibold truncate max-w-[160px]">{nome}</p>
+            <div key={item.user_id} className={`rounded-xl border-2 ${trackColor} px-3 py-2`}>
+              {/* Linha: posição + avatar + nome + pontos */}
+              <div className="flex items-center gap-2">
+                <span className="text-base w-6 text-center shrink-0 font-bold">
+                  {posicao === 1 ? MEDALS[0] : posicao === 2 ? MEDALS[1] : `${posicao}º`}
+                </span>
+                <Avatar className="h-8 w-8 shrink-0 border-2 border-white shadow ring-2 ring-blue-300">
+                  <AvatarImage src={item.avatar_url || undefined} alt={nome} />
+                  <AvatarFallback className="text-xs font-bold bg-blue-600 text-white">{initials}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{nome}</p>
                 </div>
-                <p className="text-xs text-muted-foreground shrink-0">
+                <p className="text-xs text-muted-foreground shrink-0 text-right">
                   <span className="font-bold text-primary">{item.total}</span> pts
                   {item.total !== item.pontos_fixos && (
-                    <span className="text-green-600 ml-1">(+{item.total - item.pontos_fixos} prov.)</span>
+                    <span className="text-green-600 ml-1 block">(+{item.total - item.pontos_fixos} prov.)</span>
                   )}
                 </p>
               </div>
 
-              {/* Pista de corrida */}
-              <div className="relative h-9 overflow-hidden">
-                {/* Trilho */}
-                <div className="absolute inset-y-0 left-0 right-6 rounded-full bg-white/60 border border-gray-200" />
-                {/* Barra de progresso */}
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 opacity-40 transition-all duration-1000"
-                  style={{ width: `calc(${pct}% - 24px)` }}
-                />
-                {/* Carrinho + avatar no final da barra */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 flex items-center gap-0.5"
-                  style={{ left: `calc(${pct}% - 24px - 32px)` }}
-                >
-                  <span className="text-lg leading-none select-none" style={{ filter: posicao === 1 ? "drop-shadow(0 0 4px gold)" : undefined }}>🏎️</span>
-                  <Avatar className="h-8 w-8 border-2 border-white shadow-md ring-2 ring-blue-400">
-                    <AvatarImage src={item.avatar_url || undefined} alt={nome} />
-                    <AvatarFallback className="text-xs font-bold bg-blue-600 text-white">{initials}</AvatarFallback>
-                  </Avatar>
+              {/* Pista: carrinho percorre barra de progresso até a bandeira */}
+              <div className="flex items-center gap-1 mt-1.5">
+                {/* Barra + carrinho */}
+                <div className="flex-1 relative h-5 bg-gray-100 rounded-full border border-gray-200 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-500 transition-all duration-1000"
+                    style={{ width: `${pct}%` }}
+                  />
+                  {/* Carrinho na ponta da barra — dentro mas sem sair */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-full transition-all duration-1000 text-base leading-none"
+                    style={{ left: `${Math.min(pct, 94)}%`, filter: posicao === 1 ? "drop-shadow(0 0 3px gold)" : undefined }}
+                  >
+                    🏎️
+                  </div>
                 </div>
-                {/* Bandeirada */}
-                <div className="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center">
-                  <span className="text-sm">🏁</span>
-                </div>
+                {/* Bandeira sempre fora, nunca sobrepõe */}
+                <span className="text-base shrink-0">🏁</span>
               </div>
             </div>
           )
