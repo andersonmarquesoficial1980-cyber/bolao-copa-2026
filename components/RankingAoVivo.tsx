@@ -65,6 +65,18 @@ function calcularPontosProvisórios(
   return participante.pontos_fixos + bonus
 }
 
+function traduzirStatus(descricao: string, minuto: number): string {
+  const d = descricao.toLowerCase()
+  if (d.includes("first half") || d.includes("1st half")) return `1º Tempo${minuto > 0 ? ` · ${minuto}'` : ""}`
+  if (d.includes("second half") || d.includes("2nd half")) return `2º Tempo${minuto > 0 ? ` · ${minuto}'` : ""}`
+  if (d.includes("halftime") || d.includes("half time")) return "Intervalo"
+  if (d.includes("extra time") || d.includes("overtime")) return `Prorrogação${minuto > 0 ? ` · ${minuto}'` : ""}`
+  if (d.includes("penalty")) return "Pênaltis"
+  if (d.includes("in progress") || d.includes("in play")) return `Em andamento${minuto > 0 ? ` · ${minuto}'` : ""}`
+  if (d.includes("full time") || d.includes("final")) return "Encerrado"
+  return descricao // fallback: mostra original
+}
+
 const MEDALS = ["🥇", "🥈"]
 
 export function RankingAoVivo({ participantes, jogosBanco }: Props) {
@@ -122,7 +134,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
         <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-2 flex items-center justify-between text-sm">
           <span className="font-medium">{jogoAtual.home_pt} × {jogoAtual.away_pt}</span>
           <span className="text-2xl font-black text-green-700">{jogoAtual.placar_casa} – {jogoAtual.placar_fora}</span>
-          <span className="text-xs text-green-600">{jogoAtual.descricao}</span>
+          <span className="text-xs text-green-600">{traduzirStatus(jogoAtual.descricao, jogoAtual.minuto)}</span>
         </div>
       )}
 
