@@ -1,3 +1,5 @@
+"use client"
+
 import { submitPredictionAction } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { Game, Prediction } from "@/types"
@@ -9,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PlacarBandeiras } from "@/components/PlacarBandeiras"
 import { TituloJogo } from "@/components/TituloJogo"
+import { useRef, useState, useTransition } from "react"
 
 interface OtherPrediction {
   palpite_casa: number
@@ -30,14 +33,46 @@ function statusLabel(status: string, hasStarted: boolean) {
 }
 
 export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPorPagamento = false }: GameCardProps) {
-  // Fecha palpites 10 minutos antes do jogo
   const cutoff = new Date(new Date(game.data_jogo).getTime() - 10 * 60 * 1000)
   const hasStarted = new Date() >= cutoff
   const { label, color } = statusLabel(game.status, hasStarted)
   const canPredict = !hasStarted && game.status === "scheduled"
 
+  const [toast, setToast] = useState<{ msg: string; tipo: "success" | "error" } | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function showToast(msg: string, tipo: "success" | "error") {
+    setToast({ msg, tipo })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = formRef.current
+    if (!form) return
+    const fd = new FormData(form)
+
+    startTransition(async () => {
+      const result = await submitPredictionAction(fd)
+      if (result.ok) {
+        showToast("✅ " + result.message, "success")
+      } else {
+        showToast("❌ " + result.message, "error")
+      }
+    })
+  }
+
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col relative">
+      {/* Toast */}
+      {toast && (
+        <div className={`absolute top-2 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg text-sm font-medium text-white transition-all
+          ${toast.tipo === "success" ? "bg-green-600" : "bg-red-600"}`}>
+          {toast.msg}
+        </div>
+      )}
+
       <CardHeader className="space-y-2 pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base leading-tight">
@@ -53,7 +88,6 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
         </div>
         <p className="text-xs text-muted-foreground">{formatDate(game.data_jogo)}</p>
 
-        {/* Placar real se finalizado — bandeiras grandes + placar */}
         {game.status === "finished" && game.placar_casa !== null && (
           <PlacarBandeiras
             bandeiraCasa={game.bandeira_casa ?? ""}
@@ -65,8 +99,7 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
       </CardHeader>
 
       <CardContent className="space-y-4 pt-0 flex-1 flex flex-col justify-between">
-        {/* Palpite do usuário */}
-        <form action={submitPredictionAction} className="space-y-3">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
           <input type="hidden" name="game_id" value={game.id} />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -94,12 +127,19 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
               />
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={!canPredict || bloqueadoPorPagamento}>
-            {bloqueadoPorPagamento ? "🔒 Pague R$ 20 para palpitar" : canPredict ? "Salvar palpite" : hasStarted ? "Palpites encerrados" : "Encerrado"}
+          <Button type="submit" className="w-full" disabled={!canPredict || bloqueadoPorPagamento || isPending}>
+            {isPending
+              ? "Salvando..."
+              : bloqueadoPorPagamento
+              ? "🔒 Pague R$ 20 para palpitar"
+              : canPredict
+              ? "Salvar palpite"
+              : hasStarted
+              ? "Palpites encerrados"
+              : "Encerrado"}
           </Button>
         </form>
 
-        {/* Palpites de todos — sempre visível */}
         {otherPredictions.length > 0 && (
           <div className="space-y-2 border-t pt-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Palpites da galera</p>

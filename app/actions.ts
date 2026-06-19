@@ -9,22 +9,20 @@ function toInt(value: FormDataEntryValue | null, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-export async function submitPredictionAction(formData: FormData) {
+export async function submitPredictionAction(formData: FormData): Promise<{ ok: boolean; message: string }> {
   const supabase = createSupabaseServerClient()
   const {
     data: { user }
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/auth/login?error=Faça login para palpitar")
-  }
+  if (!user) return { ok: false, message: "Faça login para palpitar" }
 
   const gameId = String(formData.get("game_id") || "")
   const palpiteCasa = toInt(formData.get("palpite_casa"), -1)
   const palpiteFora = toInt(formData.get("palpite_fora"), -1)
 
   if (!gameId || palpiteCasa < 0 || palpiteFora < 0) {
-    redirect("/rodada?error=Informe placares válidos")
+    return { ok: false, message: "Informe placares válidos" }
   }
 
   const { data: game } = await supabase
@@ -34,12 +32,12 @@ export async function submitPredictionAction(formData: FormData) {
     .single()
 
   if (!game || game.status !== "scheduled") {
-    redirect("/rodada?error=Este jogo não aceita mais palpites")
+    return { ok: false, message: "Este jogo não aceita mais palpites" }
   }
 
   // A partir de 13/06, exige pagamento confirmado
   const dataJogo = new Date(game.data_jogo)
-  const corte = new Date("2026-06-13T00:00:00-03:00") // meia-noite Brasília
+  const corte = new Date("2026-06-13T00:00:00-03:00")
   if (dataJogo >= corte) {
     const { data: reg } = await supabase
       .from("registrations")
@@ -48,14 +46,14 @@ export async function submitPredictionAction(formData: FormData) {
       .eq("status", "paid")
       .maybeSingle()
     if (!reg) {
-      redirect("/dashboard?error=Faça sua inscrição de R$ 20,00 para palpitar nos jogos a partir de 13/06")
+      return { ok: false, message: "Faça sua inscrição de R$ 20,00 para palpitar nos jogos a partir de 13/06" }
     }
   }
 
   // Fecha palpites 10 minutos antes do jogo
   const cutoff = new Date(new Date(game.data_jogo).getTime() - 10 * 60 * 1000)
   if (new Date() >= cutoff) {
-    redirect("/rodada?error=Este jogo não aceita mais palpites")
+    return { ok: false, message: "Palpites encerrados (menos de 10 min para o jogo)" }
   }
 
   const { error } = await supabase.from("predictions").upsert(
@@ -70,13 +68,11 @@ export async function submitPredictionAction(formData: FormData) {
     { onConflict: "user_id,game_id" }
   )
 
-  if (error) {
-    redirect(`/rodada?error=${encodeURIComponent(error.message)}`)
-  }
+  if (error) return { ok: false, message: error.message }
 
   revalidatePath("/rodada")
   revalidatePath("/dashboard")
-  redirect("/rodada?success=Palpite salvo com sucesso")
+  return { ok: true, message: "Palpite salvo com sucesso!" }
 }
 
 export async function registerPoolAction() {
