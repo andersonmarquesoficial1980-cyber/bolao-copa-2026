@@ -2,12 +2,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { Game, Prediction } from "@/types"
 import { RodadaPorData } from "@/components/RodadaPorData"
+import { unstable_noStore as noStore } from "next/cache"
 
 interface RodadaPageProps {
   searchParams?: { error?: string; success?: string }
 }
 
 export default async function RodadaPage({ searchParams }: RodadaPageProps) {
+  noStore() // nunca cachear — sempre buscar dados frescos do banco
   const supabase = createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null

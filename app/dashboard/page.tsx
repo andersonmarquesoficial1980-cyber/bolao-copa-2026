@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
 import { RankingAoVivo } from "@/components/RankingAoVivo"
+import { unstable_noStore as noStore } from "next/cache"
 import { RankingTable } from "@/components/RankingTable"
 import { CaixaTransparente } from "@/components/CaixaTransparente"
 import { BotaoPagamento } from "@/components/BotaoPagamento"
@@ -10,6 +11,7 @@ import { Score } from "@/types"
 import { BannerCorrecao } from "@/components/BannerCorrecao"
 
 export default async function DashboardPage() {
+  noStore() // sempre buscar dados frescos — nunca servir cache
   const supabase = createSupabaseServerClient()
 
   const { data: { user } } = await supabase.auth.getUser()
