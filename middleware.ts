@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           // CRÍTICO: setar tanto no request quanto no response
           // para que o refresh_token renovado chegue ao browser
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
