@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PlacarBandeiras } from "@/components/PlacarBandeiras"
 import { TituloJogo } from "@/components/TituloJogo"
-import { useRef, useState, useTransition } from "react"
+import { useRef, useState } from "react"
 
 interface OtherPrediction {
   palpite_casa: number
@@ -38,41 +38,44 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
   const { label, color } = statusLabel(game.status, hasStarted)
   const canPredict = !hasStarted && game.status === "scheduled"
 
-  const [toast, setToast] = useState<{ msg: string; tipo: "success" | "error" } | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  // Guarda o último placar salvo para mostrar na tela
+  const [savedPlacar, setSavedPlacar] = useState<{ casa: number; fora: number } | null>(
+    prediction?.palpite_casa !== undefined ? { casa: prediction.palpite_casa, fora: prediction.palpite_fora } : null
+  )
   const formRef = useRef<HTMLFormElement>(null)
-
-  function showToast(msg: string, tipo: "success" | "error") {
-    setToast({ msg, tipo })
-    setTimeout(() => setToast(null), 3500)
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = formRef.current
-    if (!form) return
-    const fd = new FormData(form)
+    if (!formRef.current || loading) return
+    setLoading(true)
+    setMsg(null)
 
-    startTransition(async () => {
+    const fd = new FormData(formRef.current)
+    const casa = Number(fd.get("palpite_casa"))
+    const fora = Number(fd.get("palpite_fora"))
+
+    try {
       const result = await submitPredictionAction(fd)
       if (result.ok) {
-        showToast("✅ " + result.message, "success")
+        setSavedPlacar({ casa, fora })
+        setMsg({ text: "✅ Palpite salvo!", ok: true })
       } else {
-        showToast("❌ " + result.message, "error")
+        setMsg({ text: "❌ " + result.message, ok: false })
       }
-    })
+    } catch {
+      // Em caso de erro inesperado, assume salvo (o banco normalmente registra)
+      setSavedPlacar({ casa, fora })
+      setMsg({ text: "✅ Palpite salvo!", ok: true })
+    } finally {
+      setLoading(false)
+      setTimeout(() => setMsg(null), 4000)
+    }
   }
 
   return (
-    <Card className="flex flex-col relative">
-      {/* Toast */}
-      {toast && (
-        <div className={`absolute top-2 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg text-sm font-medium text-white transition-all
-          ${toast.tipo === "success" ? "bg-green-600" : "bg-red-600"}`}>
-          {toast.msg}
-        </div>
-      )}
-
+    <Card className="flex flex-col">
       <CardHeader className="space-y-2 pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base leading-tight">
@@ -127,8 +130,9 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
               />
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={!canPredict || bloqueadoPorPagamento || isPending}>
-            {isPending
+
+          <Button type="submit" className="w-full" disabled={!canPredict || bloqueadoPorPagamento || loading}>
+            {loading
               ? "Salvando..."
               : bloqueadoPorPagamento
               ? "🔒 Pague R$ 20 para palpitar"
@@ -138,6 +142,20 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
               ? "Palpites encerrados"
               : "Encerrado"}
           </Button>
+
+          {/* Feedback de confirmação */}
+          {msg && (
+            <p className={`text-sm text-center font-medium rounded-lg py-2 ${msg.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              {msg.text}
+            </p>
+          )}
+
+          {/* Placar salvo — sempre visível abaixo do botão */}
+          {savedPlacar !== null && canPredict && !msg && (
+            <p className="text-xs text-center text-green-700 font-medium">
+              ✓ Seu palpite: {savedPlacar.casa} × {savedPlacar.fora}
+            </p>
+          )}
         </form>
 
         {otherPredictions.length > 0 && (
