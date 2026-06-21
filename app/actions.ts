@@ -50,12 +50,6 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
     }
   }
 
-  // Fecha palpites 10 minutos antes do jogo
-  const cutoff = new Date(new Date(game.data_jogo).getTime() - 10 * 60 * 1000)
-  if (new Date() >= cutoff) {
-    return { ok: false, message: "Palpites encerrados (menos de 10 min para o jogo)" }
-  }
-
   const { error } = await supabase.from("predictions").upsert(
     {
       user_id: user.id,
