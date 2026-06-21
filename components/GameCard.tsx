@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PlacarBandeiras } from "@/components/PlacarBandeiras"
 import { TituloJogo } from "@/components/TituloJogo"
 import { useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface OtherPrediction {
   palpite_casa: number
@@ -38,6 +39,7 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
   const { label, color } = statusLabel(game.status, hasStarted)
   const canPredict = !hasStarted && game.status === "scheduled"
 
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
   // Guarda o último placar salvo para mostrar na tela
@@ -61,6 +63,8 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
       if (result.ok) {
         setSavedPlacar({ casa, fora })
         setMsg({ text: "✅ Palpite salvo!", ok: true })
+        // Recarrega dados do servidor para atualizar predictionMap
+        router.refresh()
       } else {
         setMsg({ text: "❌ " + result.message, ok: false })
       }
@@ -68,6 +72,7 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
       // Em caso de erro inesperado, assume salvo (o banco normalmente registra)
       setSavedPlacar({ casa, fora })
       setMsg({ text: "✅ Palpite salvo!", ok: true })
+      router.refresh()
     } finally {
       setLoading(false)
       setTimeout(() => setMsg(null), 4000)
