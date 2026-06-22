@@ -87,7 +87,7 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
 
   const buscarPlacar = useCallback(async () => {
     try {
-      const res = await fetch("/api/placar-ao-vivo")
+      const res = await fetch(`/api/placar-ao-vivo?t=${Date.now()}`, { cache: "no-store" })
       const data = await res.json()
       const vivos: JogoAoVivo[] = data.jogos || []
       setJogosAoVivo(vivos)

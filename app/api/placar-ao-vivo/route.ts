@@ -49,8 +49,12 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ jogos, ts: new Date().toISOString() })
+    return NextResponse.json({ jogos, ts: new Date().toISOString() }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" }
+    })
   } catch {
-    return NextResponse.json({ jogos: [], ts: new Date().toISOString() })
+    return NextResponse.json({ jogos: [], ts: new Date().toISOString() }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" }
+    })
   }
 }
