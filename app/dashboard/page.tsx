@@ -29,7 +29,7 @@ export default async function DashboardPage() {
     supabase.from("registrations").select("valor_pago,status").eq("status", "paid"),
     supabase.from("registrations").select("id,status").eq("user_id", user.id).eq("status", "paid").maybeSingle(),
     // Palpites de todos para o ranking ao vivo
-    supabase.from("predictions").select("user_id,game_id,palpite_casa,palpite_fora"),
+    supabase.from("predictions").select("user_id,game_id,palpite_casa,palpite_fora").limit(5000),
     supabase.from("games").select("id,time_casa,time_fora,status").neq("status","cancelled")
   ])
 
