@@ -95,6 +95,16 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
       const emAndamento = vivos.find(j => j.state === "in")
       setJogoAtual(emAndamento || null)
 
+      // DEBUG temporário
+      const geisson = participantes.find(p => p.nome?.toLowerCase().includes("geisson"))
+      if (geisson && emAndamento) {
+        const jogoArgentina = jogosBanco.find(j => j.time_casa === "Argentina" || j.time_fora === "Argentina")
+        console.log("[DEBUG] Geisson palpites:", geisson.palpites.length)
+        console.log("[DEBUG] Jogo Argentina banco:", jogoArgentina)
+        console.log("[DEBUG] Palpite Argentina:", geisson.palpites.find(p => p.game_id === jogoArgentina?.id))
+        console.log("[DEBUG] Jogo ao vivo:", emAndamento)
+      }
+
       // Recalcula ranking com pontos provisórios
       const novo = participantes.map(p => ({
         ...p,
