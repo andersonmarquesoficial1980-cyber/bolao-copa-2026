@@ -29,7 +29,8 @@ export default async function DashboardPage() {
     supabase.from("registrations").select("valor_pago,status").eq("status", "paid"),
     supabase.from("registrations").select("id,status").eq("user_id", user.id).eq("status", "paid").maybeSingle(),
     // Palpites de todos para o ranking ao vivo
-    supabase.from("predictions").select("user_id,game_id,palpite_casa,palpite_fora").range(0, 4999),
+    // Busca palpites de jogos não finalizados (para ranking ao vivo) + join com games
+    supabase.from("predictions").select("user_id,game_id,palpite_casa,palpite_fora,games!inner(status)").neq("games.status", "finished"),
     supabase.from("games").select("id,time_casa,time_fora,status").neq("status","cancelled")
   ])
 
@@ -64,7 +65,7 @@ export default async function DashboardPage() {
       game_id: t.game_id,
       palpite_casa: t.palpite_casa,
       palpite_fora: t.palpite_fora,
-    })),
+    })) as { game_id: string; palpite_casa: number; palpite_fora: number }[],
   }))
 
   return (
