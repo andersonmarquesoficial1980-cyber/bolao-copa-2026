@@ -169,6 +169,26 @@ export async function saveResultAction(formData: FormData) {
   redirect("/admin/resultados?success=Resultado salvo e pontuação calculada")
 }
 
+export async function toggleBloqueioJogoAction(formData: FormData) {
+  await requireAdmin()
+  const admin = createSupabaseAdminClient()
+
+  const gameId = String(formData.get("game_id") || "")
+  const bloqueado = formData.get("bloqueado") === "true"
+
+  const { error } = await admin
+    .from("games")
+    .update({ palpites_bloqueados: bloqueado })
+    .eq("id", gameId)
+
+  if (error) {
+    redirect(`/admin/jogos?error=${encodeURIComponent(error.message)}`)
+  }
+
+  revalidatePath("/admin/jogos")
+  revalidatePath("/rodada")
+}
+
 export async function toggleBloqueioAction(formData: FormData) {
   await requireAdmin()
   const supabase = createSupabaseServerClient()

@@ -27,7 +27,7 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
 
   const { data: game } = await supabase
     .from("games")
-    .select("id,status,data_jogo")
+    .select("id,status,data_jogo,palpites_bloqueados")
     .eq("id", gameId)
     .single()
 
@@ -35,7 +35,12 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
     return { ok: false, message: "Este jogo não aceita mais palpites" }
   }
 
-  // Verifica bloqueio manual pelo admin
+  // Verifica bloqueio por jogo
+  if (game.palpites_bloqueados) {
+    return { ok: false, message: "🔒 Palpites bloqueados para este jogo pelo administrador" }
+  }
+
+  // Verifica bloqueio geral
   const { data: configBloqueio } = await supabase
     .from("config")
     .select("value")

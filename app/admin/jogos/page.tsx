@@ -1,4 +1,5 @@
 import { createGameAction, updateGameStatusAction } from "@/app/admin/actions"
+import { BloqueioJogoToggle } from "@/components/BloqueioJogoToggle"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,7 +16,7 @@ export default async function AdminJogosPage({ searchParams }: AdminJogosPagePro
   const supabase = createSupabaseServerClient()
   const { data: games } = await supabase
     .from("games")
-    .select("id,time_casa,time_fora,data_jogo,status,group_id")
+    .select("id,time_casa,time_fora,data_jogo,status,group_id,palpites_bloqueados")
     .order("data_jogo", { ascending: true })
 
   return (
@@ -101,6 +102,10 @@ export default async function AdminJogosPage({ searchParams }: AdminJogosPagePro
                 <Button type="submit" variant="outline">
                   Atualizar
                 </Button>
+                <BloqueioJogoToggle
+                  gameId={game.id}
+                  bloqueado={(game as Game & { palpites_bloqueados: boolean }).palpites_bloqueados ?? false}
+                />
               </div>
             </form>
           ))}
