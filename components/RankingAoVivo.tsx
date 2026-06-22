@@ -45,6 +45,7 @@ function calcularPontosProvisórios(
     const jogo = jogosBanco.find(j => j.id === palpite.game_id)
     if (!jogo || jogo.status === "finished") continue // já contabilizado nos fixos
 
+    // Só considera jogos ao vivo que batem com ESTE jogo específico (evita pegar jogo errado com mesmo time)
     const aoVivo = jogosAoVivo.find(j =>
       (j.home_pt === jogo.time_casa && j.away_pt === jogo.time_fora) ||
       (j.home_pt === jogo.time_fora && j.away_pt === jogo.time_casa)
@@ -94,16 +95,6 @@ export function RankingAoVivo({ participantes, jogosBanco }: Props) {
 
       const emAndamento = vivos.find(j => j.state === "in")
       setJogoAtual(emAndamento || null)
-
-      // DEBUG temporário
-      const geisson = participantes.find(p => p.nome?.toLowerCase().includes("geisson"))
-      if (geisson && emAndamento) {
-        const jogoArgentina = jogosBanco.find(j => j.time_casa === "Argentina" || j.time_fora === "Argentina")
-        console.log("[DEBUG] Geisson palpites:", geisson.palpites.length)
-        console.log("[DEBUG] Jogo Argentina banco:", jogoArgentina)
-        console.log("[DEBUG] Palpite Argentina:", geisson.palpites.find(p => p.game_id === jogoArgentina?.id))
-        console.log("[DEBUG] Jogo ao vivo:", emAndamento)
-      }
 
       // Recalcula ranking com pontos provisórios
       const novo = participantes.map(p => ({
