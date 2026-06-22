@@ -33,6 +33,7 @@ async function refreshScores() {
   const { data: predictions, error } = await admin
     .from("predictions")
     .select("user_id,pontos,palpite_casa,palpite_fora,games(placar_casa,placar_fora,status)")
+    .range(0, 9999)
 
   if (error) return
 
