@@ -2,17 +2,21 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
+import { BloqueioToggle } from "@/components/BloqueioToggle"
 
 export default async function AdminPage() {
   const supabase = createSupabaseServerClient()
 
-  const [{ count: gamesCount }, { count: usersCount }, { count: registrationsCount }, { count: predictionsCount }] =
+  const [{ count: gamesCount }, { count: usersCount }, { count: registrationsCount }, { count: predictionsCount }, configResult] =
     await Promise.all([
       supabase.from("games").select("id", { count: "exact", head: true }),
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("registrations").select("id", { count: "exact", head: true }),
-      supabase.from("predictions").select("id", { count: "exact", head: true })
+      supabase.from("predictions").select("id", { count: "exact", head: true }),
+      supabase.from("config").select("value").eq("key", "palpites_bloqueados").maybeSingle()
     ])
+
+  const palpitesBloqueados = configResult.data?.value === "true"
 
   return (
     <div className="space-y-6">
@@ -46,6 +50,10 @@ export default async function AdminPage() {
           </CardHeader>
           <CardContent className="text-3xl font-bold">{predictionsCount || 0}</CardContent>
         </Card>
+      </section>
+
+      <section>
+        <BloqueioToggle bloqueado={palpitesBloqueados} />
       </section>
 
       <section className="flex flex-wrap gap-3">

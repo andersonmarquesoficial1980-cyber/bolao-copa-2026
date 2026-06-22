@@ -35,6 +35,16 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
     return { ok: false, message: "Este jogo não aceita mais palpites" }
   }
 
+  // Verifica bloqueio manual pelo admin
+  const { data: configBloqueio } = await supabase
+    .from("config")
+    .select("value")
+    .eq("key", "palpites_bloqueados")
+    .maybeSingle()
+  if (configBloqueio?.value === "true") {
+    return { ok: false, message: "🔒 Palpites temporariamente bloqueados pelo administrador" }
+  }
+
   // A partir de 13/06, exige pagamento confirmado
   const dataJogo = new Date(game.data_jogo)
   const corte = new Date("2026-06-13T00:00:00-03:00")

@@ -169,6 +169,20 @@ export async function saveResultAction(formData: FormData) {
   redirect("/admin/resultados?success=Resultado salvo e pontuação calculada")
 }
 
+export async function toggleBloqueioAction(formData: FormData) {
+  await requireAdmin()
+  const supabase = createSupabaseServerClient()
+
+  const bloqueado = formData.get("bloqueado") === "true"
+
+  await supabase
+    .from("config")
+    .upsert({ key: "palpites_bloqueados", value: String(bloqueado), updated_at: new Date().toISOString() })
+
+  revalidatePath("/admin")
+  revalidatePath("/rodada")
+}
+
 export async function updateRegistrationStatusAction(formData: FormData) {
   await requireAdmin()
   const admin = createSupabaseAdminClient()
