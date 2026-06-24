@@ -35,7 +35,14 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
     return { ok: false, message: "Este jogo não aceita mais palpites" }
   }
 
-  // Verifica bloqueio por jogo
+  // Bloqueio automático por horário — compara com agora em Brasília (UTC-3)
+  const agora = new Date()
+  const dataJogo = new Date(game.data_jogo)
+  if (agora >= dataJogo) {
+    return { ok: false, message: "⏰ Prazo encerrado — este jogo já começou" }
+  }
+
+  // Verifica bloqueio manual por jogo
   if (game.palpites_bloqueados) {
     return { ok: false, message: "🔒 Palpites bloqueados para este jogo pelo administrador" }
   }
@@ -51,7 +58,6 @@ export async function submitPredictionAction(formData: FormData): Promise<{ ok: 
   }
 
   // A partir de 13/06, exige pagamento confirmado
-  const dataJogo = new Date(game.data_jogo)
   const corte = new Date("2026-06-13T00:00:00-03:00")
   if (dataJogo >= corte) {
     const { data: reg } = await supabase

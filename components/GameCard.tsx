@@ -35,7 +35,9 @@ function statusLabel(status: string, hasStarted: boolean) {
 
 export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPorPagamento = false }: GameCardProps) {
   const { label, color } = statusLabel(game.status, false)
-  const canPredict = game.status === "scheduled"
+  // Bloqueio automático: impede palpite se o jogo já começou (compara UTC — servidor está em UTC, data_jogo salva em UTC)
+  const jogoJaComecou = new Date() >= new Date(game.data_jogo)
+  const canPredict = game.status === "scheduled" && !jogoJaComecou
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -141,6 +143,8 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
               ? "🔒 Pague R$ 20 para palpitar"
               : canPredict
               ? "Salvar palpite"
+              : jogoJaComecou && game.status === "scheduled"
+              ? "⏰ Jogo iniciado"
               : "Encerrado"}
           </Button>
 
