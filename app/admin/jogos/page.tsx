@@ -105,6 +105,7 @@ export default async function AdminJogosPage({ searchParams }: AdminJogosPagePro
                 <BloqueioJogoToggle
                   gameId={game.id}
                   bloqueado={(game as Game & { palpites_bloqueados: boolean }).palpites_bloqueados ?? false}
+                  bloqueadoAutomatico={new Date() >= new Date(game.data_jogo)}
                 />
               </div>
             </form>

@@ -7,10 +7,12 @@ import { useState, useTransition } from "react"
 interface BloqueioJogoToggleProps {
   gameId: string
   bloqueado: boolean
+  bloqueadoAutomatico?: boolean
 }
 
-export function BloqueioJogoToggle({ gameId, bloqueado: inicial }: BloqueioJogoToggleProps) {
+export function BloqueioJogoToggle({ gameId, bloqueado: inicial, bloqueadoAutomatico = false }: BloqueioJogoToggleProps) {
   const [bloqueado, setBloqueado] = useState(inicial)
+  const efetivamenteBloqueado = bloqueado || bloqueadoAutomatico
   const [pending, startTransition] = useTransition()
 
   function handleToggle() {
@@ -26,13 +28,19 @@ export function BloqueioJogoToggle({ gameId, bloqueado: inicial }: BloqueioJogoT
 
   return (
     <Button
-      variant={bloqueado ? "destructive" : "outline"}
+      variant={efetivamenteBloqueado ? "destructive" : "outline"}
       size="sm"
       onClick={handleToggle}
-      disabled={pending}
-      title={bloqueado ? "Liberar palpites deste jogo" : "Bloquear palpites deste jogo"}
+      disabled={pending || bloqueadoAutomatico}
+      title={
+        bloqueadoAutomatico
+          ? "Bloqueado automaticamente — jogo já iniciou"
+          : bloqueado
+          ? "Liberar palpites deste jogo"
+          : "Bloquear palpites deste jogo"
+      }
     >
-      {pending ? "..." : bloqueado ? "🔒" : "🔓"}
+      {pending ? "..." : efetivamenteBloqueado ? (bloqueadoAutomatico ? "⏰" : "🔒") : "🔓"}
     </Button>
   )
 }
