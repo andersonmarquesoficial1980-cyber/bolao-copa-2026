@@ -21,7 +21,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
       .neq("status", "cancelled")
       .order("data_jogo", { ascending: true }),
     supabase.from("predictions").select("*").eq("user_id", user.id),
-    supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)"),
+    supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)").range(0, 4999),
     supabase.from("registrations").select("id").eq("user_id", user.id).eq("status", "paid").maybeSingle()
   ])
 

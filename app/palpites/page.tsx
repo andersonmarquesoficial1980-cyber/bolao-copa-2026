@@ -19,7 +19,8 @@ export default async function PalpitesPage() {
     supabase
       .from("predictions")
       .select("game_id,palpite_casa,palpite_fora,user_id,profiles(nome,avatar_url)")
-      .order("user_id"),
+      .order("user_id")
+      .range(0, 4999),
   ])
 
   // Agrupa palpites por jogo
