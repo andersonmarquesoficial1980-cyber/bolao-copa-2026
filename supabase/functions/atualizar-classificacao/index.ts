@@ -68,8 +68,22 @@ function norm(name: string): string {
   return TEAM_MAP[name] || name
 }
 
-// Grupos ESPN têm IDs numéricos; mapeamos pela letra do grupo (A=1, B=2, ...)
-// A ESPN retorna os grupos em `standings[].name` como "Group A", "Group B", etc.
+// Mapeamento: letra do banco → letra ESPN (oficial FIFA)
+// Os grupos foram cadastrados no banco com letras diferentes das oficiais da ESPN/FIFA
+const BANCO_TO_ESPN: Record<string, string> = {
+  "A": "A", // Grupo A banco = Group A ESPN (México, Rep.Tcheca, Coreia do Sul, África do Sul)
+  "B": "B", // Grupo B banco = Group B ESPN (Canadá, Bósnia, Suíça, Catar)
+  "C": "D", // Grupo C banco = Group D ESPN (EUA, Paraguai, Austrália, Turquia)
+  "D": "E", // Grupo D banco = Group E ESPN (Alemanha, Curaçao, Holanda, Japão) — aguardando confirmação
+  "E": "F", // Grupo E banco = Group F ESPN (Equador, Suécia, Costa do Marfim, Tunísia) — aguardando
+  "F": "G", // Grupo F banco = Group G ESPN (Espanha, Bélgica, Egito, Nova Zelândia)
+  "G": "H", // Grupo G banco = Group H ESPN (Uruguai, Irã, Arábia Saudita, Cabo Verde)
+  "H": "I", // Grupo H banco = Group I ESPN (França, Iraque, Noruega, Senegal)
+  "I": "J", // Grupo I banco = Group J ESPN (Argentina, Áustria, Argélia, Jordânia)
+  "J": "K", // Grupo J banco = Group K ESPN (Inglaterra, Croácia, Portugal, Rep. Congo) — aguardando
+  "K": "L", // Grupo K banco = Group L ESPN (Colômbia, Gana, Panamá, Uzbequistão) — aguardando
+  "L": "C", // Grupo L banco = Group C ESPN (Brasil, Escócia, Haiti, Marrocos)
+}
 
 type GroupStanding = {
   letter: string      // "A"..."L"
@@ -139,7 +153,8 @@ Deno.serve(async () => {
     const gruposFinalizados = new Set<string>() // letras: "A", "B", ...
 
     for (const grupo of grupos) {
-      const letra = grupo.nome.replace("Grupo ", "").trim() // "Grupo A" → "A"
+      const letraBanco = grupo.nome.replace("Grupo ", "").trim() // "Grupo A" → "A"
+      const letraEspn = BANCO_TO_ESPN[letraBanco] || letraBanco // converter para letra ESPN
 
       const { data: jogos } = await supabase
         .from("games")
@@ -149,7 +164,7 @@ Deno.serve(async () => {
 
       if (!jogos || jogos.length === 0) continue
       const todosFinalizado = jogos.every(j => j.status === "finished")
-      if (todosFinalizado) gruposFinalizados.add(letra)
+      if (todosFinalizado) gruposFinalizados.add(letraEspn) // guardar letra ESPN
     }
 
     if (gruposFinalizados.size === 0) {
