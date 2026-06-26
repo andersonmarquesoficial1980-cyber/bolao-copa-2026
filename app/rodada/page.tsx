@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { createSupabaseServerClient } from "@/lib/supabase"
-import { Game, Prediction } from "@/types"
+import { Fase, Game, Prediction } from "@/types"
 import { RodadaPorData } from "@/components/RodadaPorData"
 import { unstable_noStore as noStore } from "next/cache"
 
@@ -14,7 +14,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: games }, { data: predictions }, { data: allPredictions }, { data: pagamento }] = await Promise.all([
+  const [{ data: games }, { data: predictions }, { data: allPredictions }, { data: pagamento }, { data: groups }] = await Promise.all([
     supabase
       .from("games")
       .select("id,group_id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
@@ -22,11 +22,17 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
       .order("data_jogo", { ascending: true }),
     supabase.from("predictions").select("*").eq("user_id", user.id),
     supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)").range(0, 4999),
-    supabase.from("registrations").select("id").eq("user_id", user.id).eq("status", "paid").maybeSingle()
+    supabase.from("registrations").select("id").eq("user_id", user.id).eq("status", "paid").maybeSingle(),
+    supabase.from("groups").select("id,fase")
   ])
 
   const jaPagou = !!pagamento
   const corte13 = new Date("2026-06-13T00:00:00-03:00")
+
+  // Mapa group_id → fase
+  const groupFaseMap = new Map<string, Fase>(
+    (groups || []).map(g => [g.id, g.fase as Fase])
+  )
 
   const predictionMap = new Map((predictions || []).map(p => [p.game_id, p as Prediction]))
 
@@ -65,6 +71,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
           allPredictionsMap={allPredictionsMap}
           jaPagou={jaPagou}
           corte13={corte13}
+          groupFaseMap={groupFaseMap}
         />
       ) : (
         <Card>
