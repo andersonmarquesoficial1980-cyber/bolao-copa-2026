@@ -21,7 +21,7 @@ interface RodadaPorDataProps {
 
 const FASE_LABEL: Record<Fase, string> = {
   grupo: "Fase de Grupos",
-  oitavas: "Oitavas de Final",
+  oitavas: "Segunda Fase",
   quartas: "Quartas de Final",
   semifinal: "Semifinal",
   terceiro_lugar: "3º Lugar",
