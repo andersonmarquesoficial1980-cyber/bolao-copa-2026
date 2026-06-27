@@ -59,7 +59,7 @@ export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou
     games.some(g => getFase(g) === fase && (new Date(g.data_jogo) >= now || g.status === "live"))
   ) ?? fasesComJogos[fasesComJogos.length - 1]
 
-  const [faseAberta, setFaseAberta] = useState<Fase | null>(faseInicial ?? null)
+  const [faseAberta, setFaseAberta] = useState<Fase | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
 
   function handleFaseClick(fase: Fase) {
