@@ -174,17 +174,15 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Palpites da galera</p>
             <div className="flex flex-wrap gap-2">
               {otherPredictions.map((p, i) => (
-                <div key={i} className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-1 text-xs">
-                  <Avatar className="h-5 w-5">
+                <div key={i} className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-1 text-xs min-w-0">
+                  <Avatar className="h-5 w-5 shrink-0">
                     <AvatarImage src={p.profiles?.avatar_url} />
                     <AvatarFallback className="text-[9px]">
                       {(p.profiles?.nome || "?").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{p.profiles?.nome?.split(" ")[0]}</span>
-                  <span className="text-muted-foreground">
-                    {game.bandeira_casa} {p.palpite_casa} × {p.palpite_fora} {game.bandeira_fora}
-                  </span>
+                  <span className="font-medium truncate max-w-[60px]">{p.profiles?.nome?.split(" ")[0]}</span>
+                  <span className="text-muted-foreground shrink-0">{p.palpite_casa} × {p.palpite_fora}</span>
                 </div>
               ))}
             </div>
