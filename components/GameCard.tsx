@@ -42,9 +42,12 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
-  // Guarda o último placar salvo para mostrar na tela
-  const [savedPlacar, setSavedPlacar] = useState<{ casa: number; fora: number } | null>(
-    prediction?.palpite_casa !== undefined ? { casa: prediction.palpite_casa, fora: prediction.palpite_fora } : null
+  // Estado controlado dos inputs — sincroniza com prediction do servidor
+  const [valCasa, setValCasa] = useState<string>(
+    prediction?.palpite_casa !== undefined ? String(prediction.palpite_casa) : ""
+  )
+  const [valFora, setValFora] = useState<string>(
+    prediction?.palpite_fora !== undefined ? String(prediction.palpite_fora) : ""
   )
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -61,16 +64,17 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
     try {
       const result = await submitPredictionAction(fd)
       if (result.ok) {
-        setSavedPlacar({ casa, fora })
+        setValCasa(String(casa))
+        setValFora(String(fora))
         setMsg({ text: "✅ Palpite salvo!", ok: true })
-        // Recarrega dados do servidor para atualizar predictionMap
         router.refresh()
       } else {
         setMsg({ text: "❌ " + result.message, ok: false })
       }
     } catch {
       // Em caso de erro inesperado, assume salvo (o banco normalmente registra)
-      setSavedPlacar({ casa, fora })
+      setValCasa(String(casa))
+      setValFora(String(fora))
       setMsg({ text: "✅ Palpite salvo!", ok: true })
       router.refresh()
     } finally {
@@ -117,7 +121,8 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
                 name="palpite_casa"
                 type="number"
                 min={0}
-                defaultValue={prediction?.palpite_casa ?? ""}
+                value={valCasa}
+                onChange={e => setValCasa(e.target.value)}
                 required
                 disabled={!canPredict}
               />
@@ -129,7 +134,8 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
                 name="palpite_fora"
                 type="number"
                 min={0}
-                defaultValue={prediction?.palpite_fora ?? ""}
+                value={valFora}
+                onChange={e => setValFora(e.target.value)}
                 required
                 disabled={!canPredict}
               />
@@ -156,9 +162,9 @@ export function GameCard({ game, prediction, otherPredictions = [], bloqueadoPor
           )}
 
           {/* Placar salvo — sempre visível abaixo do botão */}
-          {savedPlacar !== null && canPredict && !msg && (
+          {valCasa !== "" && valFora !== "" && canPredict && !msg && (
             <p className="text-xs text-center text-green-700 font-medium">
-              ✓ Seu palpite: {savedPlacar.casa} × {savedPlacar.fora}
+              ✓ Seu palpite: {valCasa} × {valFora}
             </p>
           )}
         </form>
