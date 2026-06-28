@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase"
+import { Fase } from "@/types"
 import { PalpitesClient } from "./PalpitesClient"
 
 function getOutcome(c: number, f: number) {
@@ -10,10 +11,10 @@ function getOutcome(c: number, f: number) {
 export default async function PalpitesPage() {
   const supabase = createSupabaseServerClient()
 
-  const [{ data: games }, { data: predictions }] = await Promise.all([
+  const [{ data: games }, { data: predictions }, { data: groups }] = await Promise.all([
     supabase
       .from("games")
-      .select("id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
+      .select("id,group_id,time_casa,time_fora,bandeira_casa,bandeira_fora,data_jogo,placar_casa,placar_fora,status")
       .neq("status", "cancelled")
       .order("data_jogo", { ascending: true }),
     supabase
@@ -21,7 +22,13 @@ export default async function PalpitesPage() {
       .select("game_id,palpite_casa,palpite_fora,user_id,profiles(nome,avatar_url)")
       .order("user_id")
       .range(0, 4999),
+    supabase.from("groups").select("id,fase"),
   ])
+
+  // Mapa group_id → fase
+  const groupFaseMap = new Map<string, Fase>(
+    (groups || []).map(g => [g.id, g.fase as Fase])
+  )
 
   // Agrupa palpites por jogo
   const predByGame = new Map<string, { nome: string; palpite_casa: number; palpite_fora: number }[]>()
@@ -39,6 +46,7 @@ export default async function PalpitesPage() {
       const dt = new Date(g.data_jogo)
       const dataLabel = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" })
       const horaLabel = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })
+      const fase: Fase = (g.group_id && groupFaseMap.get(g.group_id)) || "grupo"
 
       const palpites = (predByGame.get(g.id) || []).map(p => {
         let acerto: "exato" | "resultado" | null = null
@@ -54,6 +62,7 @@ export default async function PalpitesPage() {
 
       return {
         id: g.id,
+        fase,
         time_casa: g.time_casa,
         time_fora: g.time_fora,
         bandeira_casa: g.bandeira_casa ?? "",
