@@ -73,7 +73,7 @@ function getDateStr(d: Date): string {
 Deno.serve(async () => {
   try {
     const agora = new Date()
-    const duasHorasAtras = new Date(agora.getTime() - 2 * 60 * 60 * 1000)
+    const duasHorasAtras = new Date(agora.getTime() - 36 * 60 * 60 * 1000) // 36h — pega jogos que a função eventualmente perdeu
 
     // Buscar jogos no banco que deveriam ter terminado
     const { data: jogosParaVerificar, error: dbError } = await supabase
