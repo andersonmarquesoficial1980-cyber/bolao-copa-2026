@@ -90,10 +90,10 @@ Deno.serve(async () => {
       })
     }
 
-    // Buscar resultados ESPN para hoje e ontem
+    // Buscar resultados ESPN para os últimos 3 dias (garante cobertura mesmo se o cron falhar)
     const hoje = getDateStr(agora)
-    const ontem = getDateStr(new Date(agora.getTime() - 24 * 60 * 60 * 1000))
-    const espnUrl = `https://site.web.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${ontem}-${hoje}`
+    const doisDiasAtras = getDateStr(new Date(agora.getTime() - 48 * 60 * 60 * 1000))
+    const espnUrl = `https://site.web.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${doisDiasAtras}-${hoje}`
 
     const espnRes = await fetch(espnUrl)
     if (!espnRes.ok) throw new Error(`Falha ESPN: ${espnRes.status}`)
