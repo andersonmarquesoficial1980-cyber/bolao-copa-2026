@@ -73,7 +73,10 @@ function getDateStr(d: Date): string {
 Deno.serve(async () => {
   try {
     const agora = new Date()
-    const duasHorasAtras = new Date(agora.getTime() - 36 * 60 * 60 * 1000) // 36h — pega jogos que a função eventualmente perdeu
+    // Pega jogos que começaram há mais de 2h (tempo suficiente para terminar)
+    // e também re-tenta jogos até 72h atrás (caso cron tenha falhado)
+    const duasHorasAtras = new Date(agora.getTime() - 2 * 60 * 60 * 1000)
+    const setentaDuasHorasAtras = new Date(agora.getTime() - 72 * 60 * 60 * 1000)
 
     // Buscar jogos no banco que deveriam ter terminado
     const { data: jogosParaVerificar, error: dbError } = await supabase
@@ -81,6 +84,7 @@ Deno.serve(async () => {
       .select("id, time_casa, time_fora, data_jogo, status")
       .in("status", ["scheduled", "live"])
       .lt("data_jogo", duasHorasAtras.toISOString())
+      .gt("data_jogo", setentaDuasHorasAtras.toISOString())
       .order("data_jogo", { ascending: true })
 
     if (dbError) throw dbError
@@ -92,8 +96,8 @@ Deno.serve(async () => {
 
     // Buscar resultados ESPN para os últimos 3 dias (garante cobertura mesmo se o cron falhar)
     const hoje = getDateStr(agora)
-    const doisDiasAtras = getDateStr(new Date(agora.getTime() - 48 * 60 * 60 * 1000))
-    const espnUrl = `https://site.web.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${doisDiasAtras}-${hoje}`
+    const tresDiasAtras = getDateStr(new Date(agora.getTime() - 72 * 60 * 60 * 1000))
+    const espnUrl = `https://site.web.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${tresDiasAtras}-${hoje}`
 
     const espnRes = await fetch(espnUrl)
     if (!espnRes.ok) throw new Error(`Falha ESPN: ${espnRes.status}`)
