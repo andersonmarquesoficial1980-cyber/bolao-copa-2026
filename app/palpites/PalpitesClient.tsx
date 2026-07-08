@@ -35,7 +35,7 @@ const FASE_CONFIG: Record<Fase, { label: string; emoji: string; gradient: string
   grupo:          { label: "Fase de Grupos",   emoji: "⚽", gradient: "from-[#1B3A8C] to-[#2d5fd4]" },
   oitavas:        { label: "Segunda Fase",      emoji: "🔥", gradient: "from-[#0f6e3a] to-[#1aad5c]" },
   quartas:        { label: "Oitavas de Final",  emoji: "⚡", gradient: "from-[#7c2d12] to-[#ea580c]" },
-  semifinal:      { label: "Semifinal",         emoji: "🏆", gradient: "from-[#4c1d95] to-[#7c3aed]" },
+  semifinal:      { label: "Quartas de Final",  emoji: "🔥", gradient: "from-[#4c1d95] to-[#7c3aed]" },
   terceiro_lugar: { label: "3º Lugar",          emoji: "🥉", gradient: "from-[#374151] to-[#6b7280]" },
   final:          { label: "Final",             emoji: "👑", gradient: "from-[#92400e] to-[#f59e0b]" },
 }
