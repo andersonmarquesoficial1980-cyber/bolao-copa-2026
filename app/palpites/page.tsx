@@ -22,12 +22,16 @@ export default async function PalpitesPage() {
       .select("game_id,palpite_casa,palpite_fora,user_id,profiles(nome,avatar_url)")
       .order("user_id")
       .range(0, 4999),
-    supabase.from("groups").select("id,fase"),
+    supabase.from("groups").select("id,fase,nome"),
   ])
 
   // Mapa group_id → fase
   const groupFaseMap = new Map<string, Fase>(
     (groups || []).map(g => [g.id, g.fase as Fase])
+  )
+  // Mapa group_id → nome (para fases reutilizadas como terceiro_lugar/final)
+  const groupNomeMap = new Map<string, string>(
+    (groups || []).map(g => [g.id, g.nome as string])
   )
 
   // Agrupa palpites por jogo
@@ -60,9 +64,12 @@ export default async function PalpitesPage() {
         return { ...p, acerto }
       })
 
+      const groupNome = (g.group_id && groupNomeMap.get(g.group_id)) || ""
+
       return {
         id: g.id,
         fase,
+        groupNome,
         time_casa: g.time_casa,
         time_fora: g.time_fora,
         bandeira_casa: g.bandeira_casa ?? "",

@@ -18,6 +18,7 @@ type Palpite = {
 type Jogo = {
   id: string
   fase: Fase
+  groupNome?: string
   time_casa: string
   time_fora: string
   bandeira_casa: string
@@ -31,7 +32,15 @@ type Jogo = {
   horaLabel: string
 }
 
-const FASE_CONFIG: Record<Fase, { label: string; emoji: string; gradient: string }> = {
+// Chave de agrupamento: usa groupNome quando fase é terceiro_lugar (dois grupos com mesma fase)
+function grupoKey(j: Jogo): string {
+  if (j.fase === "terceiro_lugar" && j.groupNome) return `terceiro_lugar:${j.groupNome}`
+  return j.fase
+}
+
+type GrupoConfig = { label: string; emoji: string; gradient: string }
+
+const FASE_CONFIG: Record<Fase, GrupoConfig> = {
   grupo:          { label: "Fase de Grupos",   emoji: "⚽", gradient: "from-[#1B3A8C] to-[#2d5fd4]" },
   oitavas:        { label: "Segunda Fase",      emoji: "🔥", gradient: "from-[#0f6e3a] to-[#1aad5c]" },
   quartas:        { label: "Oitavas de Final",  emoji: "⚡", gradient: "from-[#7c2d12] to-[#ea580c]" },
@@ -40,32 +49,47 @@ const FASE_CONFIG: Record<Fase, { label: string; emoji: string; gradient: string
   final:          { label: "Semifinal",         emoji: "🏆", gradient: "from-[#92400e] to-[#f59e0b]" },
 }
 
-const FASE_ORDER: Fase[] = ["grupo", "oitavas", "quartas", "semifinal", "terceiro_lugar", "final"]
+// Override por nome do grupo (quando fase é reutilizada)
+const GRUPO_NOME_OVERRIDE: Record<string, GrupoConfig> = {
+  "Final":    { label: "Final",   emoji: "👑", gradient: "from-[#b45309] to-[#f59e0b]" },
+  "3º Lugar": { label: "3º Lugar", emoji: "🥉", gradient: "from-[#374151] to-[#6b7280]" },
+}
+
+function getCfg(j: Jogo): GrupoConfig {
+  if (j.fase === "terceiro_lugar" && j.groupNome && GRUPO_NOME_OVERRIDE[j.groupNome]) {
+    return GRUPO_NOME_OVERRIDE[j.groupNome]
+  }
+  return FASE_CONFIG[j.fase]
+}
+
+// Ordem de exibição das fases/grupos
+const GRUPO_ORDER = [
+  "grupo", "oitavas", "quartas", "semifinal", "final",
+  "terceiro_lugar:3º Lugar", "terceiro_lugar:Final",
+]
 
 export function PalpitesClient({ jogos }: { jogos: Jogo[] }) {
-  const [faseAberta, setFaseAberta] = useState<Fase | null>(null)
-  const [dataSel, setDataSel] = useState<string | null>(null)
-  const [jogoSel, setJogoSel] = useState<string | null>(null)
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(null)
+  const [dataSel, setDataSel]         = useState<string | null>(null)
+  const [jogoSel, setJogoSel]         = useState<string | null>(null)
 
-  const fasesComJogos = FASE_ORDER.filter(f => jogos.some(j => j.fase === f))
+  // Grupos únicos presentes nos jogos, na ordem certa
+  const gruposComJogos = GRUPO_ORDER.filter(k => jogos.some(j => grupoKey(j) === k))
 
-  function abrirFase(fase: Fase) {
-    if (faseAberta === fase) { setFaseAberta(null); setDataSel(null); setJogoSel(null); return }
-    setFaseAberta(fase)
-    setDataSel(null)
-    setJogoSel(null)
+  function abrirGrupo(k: string) {
+    if (grupoAberto === k) { setGrupoAberto(null); setDataSel(null); setJogoSel(null); return }
+    setGrupoAberto(k); setDataSel(null); setJogoSel(null)
   }
 
   function voltar() {
     if (jogoSel) { setJogoSel(null); return }
     if (dataSel) { setDataSel(null); return }
-    setFaseAberta(null)
+    setGrupoAberto(null)
   }
 
   // Tela 3 — palpites do jogo
   if (jogoSel) {
     const j = jogos.find(j => j.id === jogoSel)!
-    const cfg = FASE_CONFIG[j.fase]
     return (
       <div className="space-y-4">
         <button onClick={voltar} className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">← Voltar</button>
@@ -106,8 +130,8 @@ export function PalpitesClient({ jogos }: { jogos: Jogo[] }) {
   }
 
   // Tela 2 — jogos da data
-  if (dataSel && faseAberta) {
-    const jogosDaData = jogos.filter(j => j.fase === faseAberta && j.dataLabel === dataSel)
+  if (dataSel && grupoAberto) {
+    const jogosDaData = jogos.filter(j => grupoKey(j) === grupoAberto && j.dataLabel === dataSel)
     return (
       <div className="space-y-4">
         <button onClick={voltar} className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">← Voltar</button>
@@ -133,37 +157,33 @@ export function PalpitesClient({ jogos }: { jogos: Jogo[] }) {
     )
   }
 
-  // Tela 1 — cards de fase
+  // Tela 1 — cards de fase/grupo
   return (
     <div className="space-y-4">
-      {fasesComJogos.map(fase => {
-        const cfg = FASE_CONFIG[fase]
-        const jogosDaFase = jogos.filter(j => j.fase === fase)
-        const isOpen = faseAberta === fase
+      {gruposComJogos.map(grupoK => {
+        const jogosDaFase = jogos.filter(j => grupoKey(j) === grupoK)
+        const cfg = getCfg(jogosDaFase[0])
+        const isOpen = grupoAberto === grupoK
         const totalPalpites = jogosDaFase.reduce((s, j) => s + j.palpites.length, 0)
         const totalJogos = jogosDaFase.length
-
-        // Datas únicas da fase
         const datas = Array.from(new Set(jogosDaFase.map(j => j.dataLabel)))
 
         return (
-          <div key={fase} className="rounded-2xl overflow-hidden shadow-lg">
-            {/* Card da fase */}
+          <div key={grupoK} className="rounded-2xl overflow-hidden shadow-lg">
             <button
-              onClick={() => abrirFase(fase)}
+              onClick={() => abrirGrupo(grupoK)}
               className={`w-full bg-gradient-to-r ${cfg.gradient} text-white px-5 py-4 flex items-center justify-between hover:brightness-110 transition-all`}
             >
               <div className="flex items-center gap-4">
                 <span className="text-3xl">{cfg.emoji}</span>
                 <div className="text-left">
                   <div className="font-bold text-lg">{cfg.label}</div>
-                  <div className="text-sm opacity-80">{totalJogos} jogos · {totalPalpites} palpites</div>
+                  <div className="text-sm opacity-80">{totalJogos} jogo{totalJogos !== 1 ? "s" : ""} · {totalPalpites} palpites</div>
                 </div>
               </div>
               <span className="text-2xl transition-transform duration-200" style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
             </button>
 
-            {/* Datas da fase */}
             {isOpen && (
               <div className="bg-zinc-50 border-x border-b border-zinc-200 rounded-b-2xl">
                 <div className="grid gap-3 p-4 sm:grid-cols-2 md:grid-cols-3">

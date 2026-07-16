@@ -23,7 +23,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
     supabase.from("predictions").select("*").eq("user_id", user.id),
     supabase.from("predictions").select("game_id,palpite_casa,palpite_fora,profiles(nome,avatar_url)").range(0, 4999),
     supabase.from("registrations").select("id").eq("user_id", user.id).eq("status", "paid").maybeSingle(),
-    supabase.from("groups").select("id,fase")
+    supabase.from("groups").select("id,fase,nome")
   ])
 
   const jaPagou = !!pagamento
@@ -32,6 +32,10 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
   // Mapa group_id → fase
   const groupFaseMap = new Map<string, Fase>(
     (groups || []).map(g => [g.id, g.fase as Fase])
+  )
+  // Mapa group_id → nome
+  const groupNomeMap = new Map<string, string>(
+    (groups || []).map(g => [g.id, g.nome as string])
   )
 
   const predictionMap = new Map((predictions || []).map(p => [p.game_id, p as Prediction]))
@@ -72,6 +76,7 @@ export default async function RodadaPage({ searchParams }: RodadaPageProps) {
           jaPagou={jaPagou}
           corte13={corte13}
           groupFaseMap={groupFaseMap}
+          groupNomeMap={groupNomeMap}
         />
       ) : (
         <Card>

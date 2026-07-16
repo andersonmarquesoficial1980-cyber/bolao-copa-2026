@@ -17,6 +17,7 @@ interface RodadaPorDataProps {
   jaPagou: boolean
   corte13: Date
   groupFaseMap: Map<string, Fase>
+  groupNomeMap?: Map<string, string>
 }
 
 const FASE_CONFIG: Record<Fase, { label: string; emoji: string; desc: string; gradient: string }> = {
@@ -25,10 +26,18 @@ const FASE_CONFIG: Record<Fase, { label: string; emoji: string; desc: string; gr
   quartas:        { label: "Oitavas de Final",  emoji: "⚡", desc: "16 seleções, mata-mata",          gradient: "from-[#7c2d12] to-[#ea580c]" },
   semifinal:      { label: "Quartas de Final",  emoji: "🔥", desc: "8 seleções, grandes duelos",     gradient: "from-[#4c1d95] to-[#7c3aed]" },
   terceiro_lugar: { label: "3º Lugar",          emoji: "🥉", desc: "Disputa pelo bronze",            gradient: "from-[#374151] to-[#6b7280]" },
-  final:          { label: "Semifinal",         emoji: "🏆", desc: "4 seleções, semifinal da Copa",      gradient: "from-[#92400e] to-[#f59e0b]" },
+  final:          { label: "Semifinal",         emoji: "🏆", desc: "4 seleções, semifinal da Copa",     gradient: "from-[#92400e] to-[#f59e0b]" },
 }
 
-const FASE_ORDER: Fase[] = ["grupo", "oitavas", "quartas", "semifinal", "terceiro_lugar", "final"]
+// Override por nome de grupo (quando fase é reutilizada ex: terceiro_lugar para Final)
+const GRUPO_NOME_OVERRIDE: Record<string, { label: string; emoji: string; desc: string; gradient: string }> = {
+  "Final":    { label: "Final",    emoji: "👑", desc: "A grande final da Copa do Mundo",  gradient: "from-[#b45309] to-[#f59e0b]" },
+  "3º Lugar": { label: "3º Lugar", emoji: "🥉", desc: "Disputa pelo bronze",              gradient: "from-[#374151] to-[#6b7280]" },
+}
+
+const FASE_ORDER: Fase[] = ["grupo", "oitavas", "quartas", "semifinal", "final", "terceiro_lugar"]
+// Ordem dos grupos nomeados dentro de terceiro_lugar
+const GRUPO_NOME_ORDER = ["3º Lugar", "Final"]
 
 function dateLabel(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("pt-BR", {
@@ -44,7 +53,7 @@ function dateDayKey(dateStr: string): string {
   })
 }
 
-export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou, corte13, groupFaseMap }: RodadaPorDataProps) {
+export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou, corte13, groupFaseMap, groupNomeMap }: RodadaPorDataProps) {
   const now = new Date()
 
   function getFase(game: Game): Fase {
@@ -52,24 +61,55 @@ export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou
     return "grupo"
   }
 
-  const fasesComJogos = FASE_ORDER.filter(fase => games.some(g => getFase(g) === fase))
+  function getGroupNome(game: Game): string {
+    return (game.group_id && groupNomeMap?.get(game.group_id)) || ""
+  }
 
-  // Fase aberta por padrão: a mais próxima com jogo futuro ou ao vivo
-  const faseInicial = fasesComJogos.find(fase =>
-    games.some(g => getFase(g) === fase && (new Date(g.data_jogo) >= now || g.status === "live"))
-  ) ?? fasesComJogos[fasesComJogos.length - 1]
+  // Chave única de agrupamento: usa groupNome quando fase é terceiro_lugar
+  function grupoKey(game: Game): string {
+    const fase = getFase(game)
+    if (fase === "terceiro_lugar") {
+      const nome = getGroupNome(game)
+      return nome ? `terceiro_lugar:${nome}` : "terceiro_lugar"
+    }
+    return fase
+  }
 
-  const [faseAberta, setFaseAberta] = useState<Fase | null>(null)
+  // Construir lista ordenada de grupos presentes
+  const gruposPresentes: string[] = []
+  for (const fase of FASE_ORDER) {
+    if (fase === "terceiro_lugar") {
+      // Expandir por nome de grupo, na ordem GRUPO_NOME_ORDER
+      for (const nome of GRUPO_NOME_ORDER) {
+        const key = `terceiro_lugar:${nome}`
+        if (games.some(g => grupoKey(g) === key) && !gruposPresentes.includes(key)) {
+          gruposPresentes.push(key)
+        }
+      }
+      // Fallback: terceiro_lugar sem nome
+      if (games.some(g => grupoKey(g) === "terceiro_lugar") && !gruposPresentes.includes("terceiro_lugar")) {
+        gruposPresentes.push("terceiro_lugar")
+      }
+    } else {
+      if (games.some(g => grupoKey(g) === fase)) gruposPresentes.push(fase)
+    }
+  }
+
+  function getCfgByKey(key: string, sample: Game): { label: string; emoji: string; desc: string; gradient: string } {
+    if (key.startsWith("terceiro_lugar:")) {
+      const nome = key.split(":")[1]
+      return GRUPO_NOME_OVERRIDE[nome] ?? FASE_CONFIG["terceiro_lugar"]
+    }
+    return FASE_CONFIG[key as Fase]
+  }
+
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
 
-  function handleFaseClick(fase: Fase) {
-    if (faseAberta === fase) {
-      setFaseAberta(null)
-      return
-    }
-    setFaseAberta(fase)
-    // auto-abrir o dia mais próximo
-    const jogosDaFase = games.filter(g => getFase(g) === fase)
+  function handleGrupoClick(key: string) {
+    if (grupoAberto === key) { setGrupoAberto(null); return }
+    setGrupoAberto(key)
+    const jogosDaFase = games.filter(g => grupoKey(g) === key)
     const grouped = new Map<string, Game[]>()
     for (const g of jogosDaFase) {
       const k = dateDayKey(g.data_jogo)
@@ -82,16 +122,16 @@ export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou
 
   return (
     <div className="space-y-4">
-      {fasesComJogos.map(fase => {
-        const cfg = FASE_CONFIG[fase]
-        const jogosDaFase = games.filter(g => getFase(g) === fase)
-        const isOpen = faseAberta === fase
+      {gruposPresentes.map(grupoK => {
+        const jogosDaFase = games.filter(g => grupoKey(g) === grupoK)
+        const cfg = getCfgByKey(grupoK, jogosDaFase[0])
+        const isOpen = grupoAberto === grupoK
         const hasLive = jogosDaFase.some(g => g.status === "live")
         const totalJogos = jogosDaFase.length
         const meusPalpites = jogosDaFase.filter(g => predictionMap.has(g.id)).length
         const concluidos = jogosDaFase.filter(g => g.status === "finished").length
 
-        // Agrupar por dia dentro da fase
+        // Agrupar por dia dentro do grupo
         const grouped = new Map<string, { label: string; games: Game[] }>()
         for (const game of jogosDaFase) {
           const key = dateDayKey(game.data_jogo)
@@ -101,10 +141,10 @@ export function RodadaPorData({ games, predictionMap, allPredictionsMap, jaPagou
         const days = Array.from(grouped.entries())
 
         return (
-          <div key={fase} className="rounded-2xl overflow-hidden shadow-lg">
-            {/* Card da fase — clicável */}
+          <div key={grupoK} className="rounded-2xl overflow-hidden shadow-lg">
+            {/* Card do grupo — clicável */}
             <button
-              onClick={() => handleFaseClick(fase)}
+              onClick={() => handleGrupoClick(grupoK)}
               className={`w-full bg-gradient-to-r ${cfg.gradient} text-white px-5 py-4 flex items-center justify-between transition-all hover:brightness-110`}
             >
               <div className="flex items-center gap-4">
